@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/modernist-472a55ca-6ac4-4877-9a39-403cbe24aaca/styles.css">
+<meta name="design_doc_mode" content="canvas">
+<style>
+body{margin:0;background:#e6e4e2}
+*{-webkit-font-smoothing:antialiased}
+.vw-scroll::-webkit-scrollbar{width:0;height:0}
+.vw-scroll{scrollbar-width:none}
+button,textarea,input{font-family:inherit}
+a{color:#ec3013}
+a:hover{color:#b8240e}
+@keyframes vwIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:#e6e4e2;font-family:var(--font-body);color:var(--color-text);padding:44px 44px 80px">
+
+  <div style="display:flex;align-items:baseline;gap:16px;border-bottom:2px solid var(--color-text);padding-bottom:14px">
+    <span style="font-family:var(--font-heading);font-weight:800;font-size:26px;letter-spacing:-0.02em;text-transform:uppercase">{{ appName }}</span>
+    <span style="font-size:12px;letter-spacing:0.14em;text-transform:uppercase;opacity:.6">Set up → send the link → watch the answers land</span>
+    <span style="margin-left:auto;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;opacity:.5">Demo build · three surfaces, one wedding</span>
+  </div>
+  <p style="max-width:800px;font-size:14px;line-height:1.6;opacity:.72;margin:16px 0 32px;text-wrap:pretty">One live system. Edit the couple's details on the left and the guest app re-skins as you type; RSVP or give a gift on the phone and it lands in the couple's console on the right — who's coming, who paid what, who still owes a reply.</p>
+
+  <div style="display:flex;gap:40px;align-items:flex-start">
+
+    <!-- 1. SETUP -->
+    <div style="width:340px;flex:none;display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;align-items:baseline;gap:10px"><span style="font-family:var(--font-heading);font-weight:800;font-size:13px;letter-spacing:.16em;text-transform:uppercase">1 — Setup</span><span style="font-size:12px;opacity:.55">Couple, once</span></div>
+      <div class="vw-scroll" style="background:var(--color-bg);border:2px solid var(--color-text);padding:20px;height:844px;box-sizing:border-box;overflow-y:auto">
+        <div style="font-family:var(--font-heading);font-weight:800;font-size:24px;line-height:1;letter-spacing:-.03em;text-transform:uppercase">Your wedding</div>
+        <div style="margin-top:9px;font-size:12px;line-height:1.55;opacity:.65">Fill this once. Every guest's app is built from it.</div>
+
+        <div style="display:flex;gap:10px;margin-top:18px">
+          <label style="flex:1;display:block">
+            <span style="display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;opacity:.55;margin-bottom:6px">First name</span>
+            <input value="{{ cfgName1 }}" onChange="{{ setName1 }}" style="width:100%;box-sizing:border-box;padding:10px;border:2px solid var(--color-text);background:#fff;font-size:14px;border-radius:0">
+          </label>
+          <label style="flex:1;display:block">
+            <span style="display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;opacity:.55;margin-bottom:6px">Second name</span>
+            <input value="{{ cfgName2 }}" onChange="{{ setName2 }}" style="width:100%;box-sizing:border-box;padding:10px;border:2px solid var(--color-text);background:#fff;font-size:14px;border-radius:0">
+          </label>
+        </div>
+        <label style="display:block;margin-top:13px">
+          <span style="display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;opacity:.55;margin-bottom:6px">Date</span>
+          <input value="{{ cfgDate }}" onChange="{{ setDate }}" style="width:100%;box-sizing:border-box;padding:10px;border:2px solid var(--color-text);background:#fff;font-size:14px;border-radius:0">
+        </label>
+        <label style="display:block;margin-top:13px">
+          <span style="display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;opacity:.55;margin-bottom:6px">Venue</span>
+          <input value="{{ cfgVenue }}" onChange="{{ setVenue }}" style="width:100%;box-sizing:border-box;padding:10px;border:2px solid var(--color-text);background:#fff;font-size:14px;border-radius:0">
+        </label>
+
+        <div style="margin-top:18px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;opacity:.55">Accent</div>
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <sc-for list="{{ swatches }}" as="s" hint-placeholder-count="5">
+            <button onClick="{{ s.pick }}" style="{{ s.style }}"></button>
+          </sc-for>
+        </div>
+
+        <div style="margin-top:18px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;opacity:.55">What guests get</div>
+        <div style="display:flex;flex-direction:column;gap:2px;margin-top:8px">
+          <sc-for list="{{ moduleToggles }}" as="m" hint-placeholder-count="3">
+            <button onClick="{{ m.toggle }}" style="{{ m.style }}">
+              <span style="width:15px;height:15px;flex:none;border:2px solid currentColor;background:{{ m.fill }}"></span>
+              <span style="flex:1;text-align:left;font-weight:600;font-size:13px">{{ m.label }}</span>
+              <span style="font-size:11px;opacity:.6">{{ m.note }}</span>
+            </button>
+          </sc-for>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:18px">
+          <label style="flex:1;display:block">
+            <span style="display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;opacity:.55;margin-bottom:6px">Fund name</span>
+            <input value="{{ cfgFundName }}" onChange="{{ setFundName }}" style="width:100%;box-sizing:border-box;padding:10px;border:2px solid var(--color-text);background:#fff;font-size:14px;border-radius:0">
+          </label>
+          <label style="width:104px;flex:none;display:block">
+            <span style="display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;opacity:.55;margin-bottom:6px">Goal</span>
+            <input value="{{ cfgGoal }}" onChange="{{ setGoal }}" style="width:100%;box-sizing:border-box;padding:10px;border:2px solid var(--color-text);background:#fff;font-size:14px;border-radius:0">
+          </label>
+        </div>
+
+        <div style="margin-top:22px;border:2px solid {{ accent }};padding:15px">
+          <div style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;opacity:.6">Name your app</div>
+          <div style="display:flex;align-items:stretch;margin-top:8px;border:2px solid var(--color-text);background:#fff">
+            <span style="display:flex;align-items:center;padding:0 2px 0 10px;font-size:13px;opacity:.55;white-space:nowrap">ribbet.app/</span>
+            <input value="{{ cfgSlug }}" onChange="{{ setSlug }}" placeholder="amaraandcole" style="flex:1;min-width:0;padding:10px 10px 10px 2px;border:0;background:transparent;font-size:14px;font-weight:700;outline:none">
+          </div>
+          <div style="{{ slugNoteStyle }}">{{ slugNote }}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:9px">
+            <sc-for list="{{ slugIdeas }}" as="s" hint-placeholder-count="3">
+              <button onClick="{{ s.pick }}" style="{{ s.style }}">{{ s.label }}</button>
+            </sc-for>
+          </div>
+
+          <div style="margin-top:16px;font-size:10px;letter-spacing:.14em;text-transform:uppercase;opacity:.6">Your guests' link</div>
+          <div style="font-family:var(--font-heading);font-weight:800;font-size:18px;letter-spacing:-.02em;margin-top:7px;word-break:break-all;color:{{ accent }}">{{ inviteLink }}</div>
+          <div style="font-size:12px;line-height:1.5;opacity:.65;margin-top:9px">Each guest gets their own token on the end — that's how the app knows their name, seats and table with no login.</div>
+          <div style="display:flex;gap:8px;margin-top:14px">
+            <button onClick="{{ copyLink }}" style="{{ ctaSmall }}">{{ copyLabel }}</button>
+            <button onClick="{{ resetDemo }}" style="flex:none;padding:11px 14px;border:2px solid var(--color-text);background:transparent;font-family:var(--font-heading);font-weight:700;font-size:12px;cursor:pointer" style-hover="background:var(--color-neutral-200)">Reset</button>
+          </div>
+        </div>
+
+        <div style="margin-top:22px;border-top:2px solid var(--color-text);padding-top:16px">
+          <div style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;opacity:.55">Send it to people</div>
+
+          <sc-if value="{{ contactsAsk }}" hint-placeholder-val="{{ true }}">
+            <div style="margin-top:12px;border:2px solid var(--color-text);padding:16px;animation:vwIn .25s ease both">
+              <div style="font-family:var(--font-heading);font-weight:800;font-size:17px;line-height:1.2;letter-spacing:-.02em">Use your contacts to send invites?</div>
+              <div style="font-size:12px;line-height:1.55;opacity:.7;margin-top:8px">We match names on your guest list to phone numbers so the invite and every reminder go out by text. Numbers stay on your device's list — we store only the ones you send to, and nothing is uploaded to build a marketing list.</div>
+              <div style="display:flex;gap:8px;margin-top:14px">
+                <button onClick="{{ allowContacts }}" style="{{ ctaSmall }}">Allow once</button>
+                <button onClick="{{ denyContacts }}" style="flex:none;padding:11px 14px;border:2px solid var(--color-text);background:transparent;font-family:var(--font-heading);font-weight:700;font-size:12px;cursor:pointer" style-hover="background:var(--color-neutral-200)">Not now</button>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ contactsDenied }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:12px;border:2px dashed var(--color-text);padding:14px;animation:vwIn .25s ease both">
+              <div style="font-size:12px;line-height:1.55;opacity:.72">No contacts access. Paste numbers by hand, or share the link yourself — the app works either way.</div>
+              <button onClick="{{ askAgain }}" style="margin-top:12px;padding:10px 13px;border:2px solid var(--color-text);background:transparent;font-family:var(--font-heading);font-weight:700;font-size:12px;cursor:pointer" style-hover="background:var(--color-neutral-200)">Turn contacts on</button>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ contactsOn }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:12px;animation:vwIn .25s ease both">
+              <div style="display:flex;justify-content:space-between;align-items:baseline">
+                <span style="font-size:12px;font-weight:700">{{ matchedCount }} matched</span>
+                <span style="font-size:12px;opacity:.6">{{ unmatchedCount }} need a number</span>
+              </div>
+              <div style="border:2px solid var(--color-text);margin-top:10px;max-height:196px;overflow-y:auto" class="vw-scroll">
+                <sc-for list="{{ contactRows }}" as="c" hint-placeholder-count="6">
+                  <button onClick="{{ c.toggle }}" style="{{ c.style }}">
+                    <span style="width:15px;height:15px;flex:none;border:2px solid currentColor;background:{{ c.fill }}"></span>
+                    <span style="flex:1;text-align:left;min-width:0">
+                      <span style="display:block;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.name }}</span>
+                      <span style="display:block;font-size:11px;opacity:.55;margin-top:1px">{{ c.phone }}</span>
+                    </span>
+                    <span style="{{ c.tagStyle }}">{{ c.tag }}</span>
+                  </button>
+                </sc-for>
+              </div>
+              <button onClick="{{ sendInvites }}" style="{{ sendInvitesStyle }}">{{ sendInvitesLabel }}</button>
+              <div style="font-size:12px;line-height:1.55;opacity:.6;margin-top:10px">Reminders reuse the same numbers — the console's nudge button texts only the people who haven't replied.</div>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. GUEST APP -->
+    <div style="flex:none;display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;align-items:baseline;gap:10px"><span style="font-family:var(--font-heading);font-weight:800;font-size:13px;letter-spacing:.16em;text-transform:uppercase">2 — Guest app</span><span style="font-size:12px;opacity:.55">{{ screenLabel }} · Rosa M.</span></div>
+      <div style="width:390px;height:844px;background:var(--color-bg);border:2px solid var(--color-text);position:relative;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(0,0,0,.18)">
+        <div style="height:46px;flex:none;display:flex;align-items:flex-end;justify-content:space-between;padding:0 22px 6px;font-size:13px;font-weight:600">
+          <span>9:41</span><span style="letter-spacing:.1em;opacity:.7">▮▮▮ ⌁</span>
+        </div>
+
+        <div class="vw-scroll" style="flex:1;overflow-y:auto;overflow-x:hidden">
+
+          <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+          <div style="animation:vwIn .28s ease both">
+            <div style="padding:10px 22px 0;font-size:11px;letter-spacing:.18em;text-transform:uppercase;opacity:.55">{{ cfgDate }}</div>
+            <div style="padding:8px 22px 20px">
+              <div style="font-family:var(--font-heading);font-weight:800;font-size:46px;line-height:.94;letter-spacing:-0.035em;text-transform:uppercase">{{ cfgName1 }}<br>&amp; {{ cfgName2 }}</div>
+              <div style="margin-top:12px;font-size:13px;line-height:1.5;opacity:.7">{{ cfgVenue }}<br>Ceremony 3:00 · Dinner 6:00</div>
+            </div>
+            <div style="height:2px;background:var(--color-divider)"></div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr)">
+              <div style="padding:14px 12px 14px 22px;border-right:2px solid var(--color-divider)"><div style="font-family:var(--font-heading);font-weight:800;font-size:26px;letter-spacing:-.03em">{{ daysToGo }}</div><div style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;opacity:.55;margin-top:2px">Days to go</div></div>
+              <div style="padding:14px 12px;border-right:2px solid var(--color-divider)"><div style="font-family:var(--font-heading);font-weight:800;font-size:26px;letter-spacing:-.03em">{{ seatsHeld }}</div><div style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;opacity:.55;margin-top:2px">Your seats</div></div>
+              <div style="padding:14px 12px"><div style="font-family:var(--font-heading);font-weight:800;font-size:26px;letter-spacing:-.03em;color:{{ accent }}">{{ todoCount }}</div><div style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;opacity:.55;margin-top:2px">To do</div></div>
+            </div>
+            <div style="height:2px;background:var(--color-divider)"></div>
+            <div style="padding:18px 22px 8px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;opacity:.55">Waiting on you</div>
+            <sc-for list="{{ todos }}" as="t" hint-placeholder-count="3">
+              <button onClick="{{ t.go }}" style="width:100%;display:flex;align-items:center;gap:14px;padding:16px 22px;background:transparent;border:0;border-top:1px solid var(--color-neutral-300);text-align:left;cursor:pointer" style-hover="background:var(--color-neutral-200)">
+                <span style="width:22px;height:22px;flex:none;border:2px solid var(--color-text);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800">{{ t.n }}</span>
+                <span style="flex:1"><span style="display:block;font-family:var(--font-heading);font-weight:700;font-size:15px;letter-spacing:-.01em">{{ t.title }}</span><span style="display:block;font-size:12px;opacity:.6;margin-top:2px">{{ t.sub }}</span></span>
+                <span style="font-size:18px;opacity:.4">→</span>
+              </button>
+            </sc-for>
+            <div style="height:2px;background:var(--color-divider)"></div>
+            <div style="padding:18px 22px 10px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;opacity:.55">From the weekend</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:0 22px 22px">
+              <div style="aspect-ratio:1;background:var(--color-neutral-300);display:flex;align-items:flex-end;padding:8px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;opacity:.55">Photo</div>
+              <div style="aspect-ratio:1;background:var(--color-neutral-200);display:flex;align-items:flex-end;padding:8px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;opacity:.55">Photo</div>
+            </div>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ isRsvp }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:vwIn .28s ease both">
+            <div style="padding:12px 22px 18px">
+              <div style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;opacity:.55">Step {{ rsvpStep }} of 3</div>
+              <div style="font-family:var(--font-heading);font-weight:800;font-size:34px;line-height:1;letter-spacing:-.03em;text-transform:uppercase;margin-top:8px">{{ rsvpTitle }}</div>
+            </div>
+            <div style="height:4px;display:flex;background:var(--color-neutral-200)"><div style="height:100%;transition:width .35s ease;background:{{ accent }};width:{{ rsvpPct }}"></div></div>
+
+            <sc-if value="{{ rsvpIs1 }}" hint-placeholder-val="{{ true }}">
+              <div style="padding:20px 22px 0;font-size:13px;line-height:1.55;opacity:.7">{{ rsvpIntro }}</div>
+              <div style="padding:18px 22px 8px;display:flex;flex-direction:column;gap:2px">
+                <sc-for list="{{ attendOpts }}" as="o" hint-placeholder-count="3">
+                  <button onClick="{{ o.pick }}" style="{{ o.style }}">
+                    <span style="width:16px;height:16px;border:2px solid currentColor;flex:none;background:{{ o.dot }}"></span>
+                    <span style="font-family:var(--font-heading);font-weight:700;font-size:15px">{{ o.label }}</span>
+                  </button>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ rsvpIs2 }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:20px 22px 0;font-size:13px;line-height:1.55;opacity:.7">Anything the kitchen should know? This lands in the couple's console, not a spreadsheet.</div>
+              <div style="padding:16px 22px 8px;display:flex;flex-wrap:wrap;gap:8px">
+                <sc-for list="{{ diets }}" as="d" hint-placeholder-count="6">
+                  <button onClick="{{ d.toggle }}" style="{{ d.style }}">{{ d.label }}</button>
+                </sc-for>
+              </div>
+              <div style="padding:12px 22px 8px">
+                <label style="display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;opacity:.55;margin-bottom:8px">Note to the couple</label>
+                <textarea onChange="{{ setNote }}" placeholder="Optional — a line for the couple" style="width:100%;box-sizing:border-box;height:92px;padding:12px;border:2px solid var(--color-text);background:#fff;font-size:14px;resize:none;border-radius:0"></textarea>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ rsvpIs3 }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:26px 22px 0">
+                <div style="font-family:var(--font-heading);font-weight:800;font-size:22px;letter-spacing:-.02em;color:{{ accent }}">{{ rsvpAnswerLine }}</div>
+                <div style="margin-top:18px;border:2px solid var(--color-text)">
+                  <sc-for list="{{ summary }}" as="s" hint-placeholder-count="4">
+                    <div style="display:flex;justify-content:space-between;gap:16px;padding:13px 14px;border-bottom:1px solid var(--color-neutral-300);font-size:13px">
+                      <span style="letter-spacing:.1em;text-transform:uppercase;font-size:10px;opacity:.55;padding-top:2px">{{ s.k }}</span>
+                      <span style="text-align:right;font-weight:600">{{ s.v }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="margin-top:16px;font-size:12px;line-height:1.6;opacity:.6">Change any of this until the deadline. Sending updates the console instantly.</div>
+              </div>
+            </sc-if>
+
+            <div style="padding:22px;display:flex;gap:10px">
+              <button onClick="{{ rsvpBack }}" style="flex:none;padding:14px 18px;border:2px solid var(--color-text);background:transparent;font-family:var(--font-heading);font-weight:700;font-size:14px;cursor:pointer" style-hover="background:var(--color-neutral-200)">Back</button>
+              <button onClick="{{ rsvpNext }}" style="{{ ctaStyle }}">{{ rsvpCta }}</button>
+            </div>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ isGifts }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:vwIn .28s ease both">
+            <div style="padding:12px 22px 16px">
+              <div style="font-family:var(--font-heading);font-weight:800;font-size:34px;line-height:1;letter-spacing:-.03em;text-transform:uppercase">The list</div>
+              <div style="margin-top:10px;font-size:13px;line-height:1.55;opacity:.7">No registry logins. Chip in what you like, alone or with others.</div>
+            </div>
+            <div style="height:2px;background:var(--color-divider)"></div>
+            <div style="padding:16px 22px">
+              <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;opacity:.55">{{ cfgFundName }}</span><span style="font-size:12px;font-weight:700">{{ fundPct }} funded</span></div>
+              <div style="height:10px;background:var(--color-neutral-200);margin-top:8px"><div style="height:100%;transition:width .5s ease;background:{{ accent }};width:{{ fundPct }}"></div></div>
+              <div style="margin-top:8px;font-size:12px;opacity:.6">{{ fundLine }}</div>
+            </div>
+            <div style="height:2px;background:var(--color-divider)"></div>
+            <sc-for list="{{ gifts }}" as="g" hint-placeholder-count="4">
+              <div style="display:flex;gap:14px;padding:16px 22px;border-bottom:1px solid var(--color-neutral-300);align-items:flex-start">
+                <div style="width:64px;height:64px;flex:none;background:var(--color-neutral-300);display:flex;align-items:center;justify-content:center;font-size:9px;letter-spacing:.1em;text-transform:uppercase;opacity:.5">Img</div>
+                <div style="flex:1;min-width:0">
+                  <div style="font-family:var(--font-heading);font-weight:700;font-size:15px;letter-spacing:-.01em">{{ g.name }}</div>
+                  <div style="font-size:12px;opacity:.6;margin-top:2px">{{ g.meta }}</div>
+                  <div style="height:6px;background:var(--color-neutral-200);margin-top:9px"><div style="height:100%;background:var(--color-text);width:{{ g.pct }}"></div></div>
+                </div>
+                <button onClick="{{ g.give }}" style="{{ g.btnStyle }}">{{ g.btn }}</button>
+              </div>
+            </sc-for>
+            <div style="padding:22px">
+              <button onClick="{{ openGive }}" style="{{ ctaStyle }}">Give to the fund instead →</button>
+            </div>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ isDay }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:vwIn .28s ease both">
+            <div style="padding:12px 22px 14px">
+              <div style="font-family:var(--font-heading);font-weight:800;font-size:34px;line-height:1;letter-spacing:-.03em;text-transform:uppercase">The day</div>
+              <div style="margin-top:10px;font-size:13px;line-height:1.55;opacity:.7">Live on the day — the current moment moves down the list by itself.</div>
+            </div>
+            <div style="display:flex;gap:2px;padding:0 22px 14px">
+              <sc-for list="{{ dayTabs }}" as="d" hint-placeholder-count="2">
+                <button onClick="{{ d.pick }}" style="{{ d.style }}">{{ d.label }}</button>
+              </sc-for>
+            </div>
+            <div style="height:2px;background:var(--color-divider)"></div>
+            <sc-if value="{{ dayIsSchedule }}" hint-placeholder-val="{{ true }}">
+              <sc-for list="{{ schedule }}" as="e" hint-placeholder-count="6">
+                <div style="{{ e.rowStyle }}">
+                  <div style="width:56px;flex:none;font-family:var(--font-heading);font-weight:800;font-size:15px;letter-spacing:-.02em">{{ e.time }}</div>
+                  <div style="flex:1">
+                    <div style="font-family:var(--font-heading);font-weight:700;font-size:15px;letter-spacing:-.01em">{{ e.title }}</div>
+                    <div style="font-size:12px;opacity:.6;margin-top:2px">{{ e.where }}</div>
+                  </div>
+                  <div style="{{ e.badgeStyle }}">{{ e.badge }}</div>
+                </div>
+              </sc-for>
+              <div style="padding:20px 22px 26px;font-size:12px;line-height:1.6;opacity:.6">Tap any moment for directions. The app switches to Live Mode on the day and pushes one nudge per change — never more.</div>
+            </sc-if>
+            <sc-if value="{{ dayIsSeating }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:18px 22px 6px">
+                <div style="font-size:11px;letter-spacing:.18em;text-transform:uppercase;opacity:.55">You're on</div>
+                <div style="font-family:var(--font-heading);font-weight:800;font-size:30px;letter-spacing:-.03em;text-transform:uppercase;margin-top:4px;color:{{ accent }}">Table {{ myTable }}</div>
+              </div>
+              <div style="padding:8px 22px 18px;display:grid;grid-template-columns:repeat(4,1fr);gap:2px">
+                <sc-for list="{{ tables }}" as="t" hint-placeholder-count="12">
+                  <button onClick="{{ t.pick }}" style="{{ t.style }}">{{ t.n }}</button>
+                </sc-for>
+              </div>
+              <div style="height:2px;background:var(--color-divider)"></div>
+              <div style="padding:16px 22px 8px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;opacity:.55">Table {{ selectedTable }} — who's there</div>
+              <sc-for list="{{ tableGuests }}" as="p" hint-placeholder-count="6">
+                <div style="display:flex;align-items:center;gap:12px;padding:12px 22px;border-top:1px solid var(--color-neutral-300)">
+                  <div style="width:32px;height:32px;flex:none;border:2px solid var(--color-text);display:flex;align-items:center;justify-content:center;font-family:var(--font-heading);font-weight:800;font-size:11px">{{ p.ini }}</div>
+                  <div style="flex:1"><div style="font-size:14px;font-weight:600">{{ p.name }}</div><div style="font-size:11px;opacity:.55;margin-top:1px">{{ p.rel }}</div></div>
+                </div>
+              </sc-for>
+              <div style="padding:20px 22px 26px;font-size:12px;line-height:1.6;opacity:.6">Guests only ever see their own table — no full guest list floating around the internet.</div>
+            </sc-if>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ isPhotos }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:vwIn .28s ease both">
+            <div style="padding:12px 22px 14px">
+              <div style="font-family:var(--font-heading);font-weight:800;font-size:34px;line-height:1;letter-spacing:-.03em;text-transform:uppercase">Roll</div>
+              <div style="margin-top:10px;font-size:13px;line-height:1.55;opacity:.7">Every guest's camera, one album. Nothing posts publicly.</div>
+            </div>
+            <div style="display:flex;gap:2px;padding:0 22px 14px">
+              <sc-for list="{{ albums }}" as="a" hint-placeholder-count="3">
+                <button onClick="{{ a.pick }}" style="{{ a.style }}">{{ a.label }}</button>
+              </sc-for>
+            </div>
+            <div style="height:2px;background:var(--color-divider)"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;padding:2px 0">
+              <sc-for list="{{ photoCells }}" as="p" hint-placeholder-count="12">
+                <div style="aspect-ratio:1;display:flex;align-items:flex-end;padding:6px;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:rgba(32,30,29,.45);background:{{ p.bg }}">{{ p.tag }}</div>
+              </sc-for>
+            </div>
+            <div style="padding:20px 22px 26px">
+              <button onClick="{{ addPhoto }}" style="width:100%;padding:15px 18px;border:2px solid var(--color-text);background:transparent;font-family:var(--font-heading);font-weight:700;font-size:14px;text-align:left;cursor:pointer" style-hover="background:var(--color-neutral-200)">＋ Add 9 photos from your camera roll</button>
+              <div style="margin-top:12px;font-size:12px;line-height:1.6;opacity:.6">Photos stay in the album for a year, then the couple gets the archive.</div>
+            </div>
+          </div>
+          </sc-if>
+
+        </div>
+
+        <div style="flex:none;border-top:2px solid var(--color-text);display:grid;background:var(--color-bg);grid-template-columns:{{ tabCols }}">
+          <sc-for list="{{ tabs }}" as="tb" hint-placeholder-count="5">
+            <button onClick="{{ tb.go }}" style="{{ tb.style }}">
+              <span style="font-size:17px;line-height:1">{{ tb.icon }}</span>
+              <span style="font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:700">{{ tb.label }}</span>
+            </button>
+          </sc-for>
+        </div>
+        <div style="flex:none;height:22px;display:flex;align-items:center;justify-content:center;background:var(--color-bg)"><div style="width:130px;height:4px;background:var(--color-text);opacity:.85"></div></div>
+
+        <sc-if value="{{ sheetOpen }}" hint-placeholder-val="{{ false }}">
+          <div onClick="{{ closeSheet }}" style="position:absolute;inset:0;background:rgba(32,30,29,.5)"></div>
+          <div style="position:absolute;left:0;right:0;bottom:0;background:var(--color-bg);border-top:2px solid var(--color-text);padding:22px;animation:vwIn .25s ease both">
+            <div style="font-family:var(--font-heading);font-weight:800;font-size:24px;letter-spacing:-.02em;text-transform:uppercase">Chip in</div>
+            <div style="margin-top:10px;font-size:13px;line-height:1.55;opacity:.7">{{ sheetBody }}</div>
+            <div style="display:flex;gap:8px;margin-top:18px">
+              <sc-for list="{{ amounts }}" as="am" hint-placeholder-count="4">
+                <button onClick="{{ am.pick }}" style="{{ am.style }}">{{ am.label }}</button>
+              </sc-for>
+            </div>
+            <button onClick="{{ confirmGive }}" style="{{ ctaStyleWide }}">{{ sheetCta }}</button>
+            <button onClick="{{ closeSheet }}" style="width:100%;margin-top:8px;padding:12px;border:0;background:transparent;font-size:13px;opacity:.6;cursor:pointer">Not now</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;left:22px;right:22px;bottom:96px;background:var(--color-text);color:var(--color-bg);padding:14px 16px;font-size:13px;font-weight:600;animation:vwIn .2s ease both">{{ toast }}</div>
+        </sc-if>
+      </div>
+    </div>
+
+    <!-- 3. COUPLE CONSOLE — fixed height, scrolls internally -->
+    <div style="flex:none;display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;align-items:baseline;gap:10px"><span style="font-family:var(--font-heading);font-weight:800;font-size:13px;letter-spacing:.16em;text-transform:uppercase">3 — Couple console</span><span style="font-size:12px;opacity:.55">Private to {{ cfgName1 }} &amp; {{ cfgName2 }}</span></div>
+      <div style="width:1000px;height:844px;background:var(--color-bg);border:2px solid var(--color-text);box-shadow:0 24px 60px rgba(0,0,0,.18);display:flex;flex-direction:column;overflow:hidden">
+
+        <div style="flex:none;display:flex;align-items:center;gap:12px;padding:11px 18px;border-bottom:2px solid var(--color-text);background:var(--color-neutral-200)">
+          <div style="display:flex;gap:6px">
+            <div style="width:11px;height:11px;border:2px solid var(--color-text)"></div>
+            <div style="width:11px;height:11px;border:2px solid var(--color-text)"></div>
+            <div style="width:11px;height:11px;border:2px solid var(--color-text)"></div>
+          </div>
+          <div style="flex:1;text-align:center;font-size:12px;opacity:.6">{{ consoleUrl }}</div>
+        </div>
+
+        <div style="flex:none;display:grid;grid-template-columns:repeat(5,1fr);border-bottom:2px solid var(--color-text)">
+          <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="5">
+            <div style="{{ k.style }}">
+              <div style="font-family:var(--font-heading);font-weight:800;font-size:30px;letter-spacing:-.03em;color:{{ k.color }}">{{ k.value }}</div>
+              <div style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;opacity:.55;margin-top:3px">{{ k.label }}</div>
+              <div style="font-size:11px;opacity:.5;margin-top:4px">{{ k.sub }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="flex:none;display:flex;align-items:center;gap:2px;padding:14px 18px 12px;border-bottom:2px solid var(--color-text)">
+          <sc-for list="{{ consoleTabs }}" as="c" hint-placeholder-count="4">
+            <button onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.label }}</button>
+          </sc-for>
+          <div style="flex:1"></div>
+          <button onClick="{{ exportCsv }}" style="padding:9px 14px;border:2px solid var(--color-text);background:transparent;font-family:var(--font-heading);font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer" style-hover="background:var(--color-neutral-200)">Export CSV</button>
+        </div>
+
+        <div class="vw-scroll" style="flex:1;min-height:0;overflow-y:auto">
+
+          <sc-if value="{{ conIsGuests }}" hint-placeholder-val="{{ true }}">
+          <div style="animation:vwIn .25s ease both">
+            <div style="display:flex;gap:2px;padding:14px 18px">
+              <sc-for list="{{ filters }}" as="f" hint-placeholder-count="4">
+                <button onClick="{{ f.pick }}" style="{{ f.style }}">{{ f.label }}</button>
+              </sc-for>
+            </div>
+            <div style="position:sticky;top:0;background:var(--color-bg);display:grid;grid-template-columns:1.9fr 1fr 0.6fr 1.3fr 1.2fr 1.7fr;padding:10px 18px;border-top:2px solid var(--color-text);border-bottom:2px solid var(--color-text);font-size:10px;letter-spacing:.14em;text-transform:uppercase;opacity:.55;font-weight:700">
+              <div>Guest</div><div>RSVP</div><div>Party</div><div>Dietary</div><div>Gift</div><div>Message</div>
+            </div>
+            <sc-for list="{{ guestRows }}" as="g" hint-placeholder-count="10">
+              <div style="{{ g.rowStyle }}">
+                <div>
+                  <div style="font-family:var(--font-heading);font-weight:700;font-size:14px;letter-spacing:-.01em">{{ g.name }}</div>
+                  <div style="font-size:11px;opacity:.5;margin-top:2px">{{ g.rel }}</div>
+                </div>
+                <div><span style="{{ g.pillStyle }}">{{ g.rsvp }}</span></div>
+                <div style="font-size:13px;font-weight:600;padding-top:3px">{{ g.party }}</div>
+                <div style="font-size:12px;opacity:.75;padding-top:3px">{{ g.diet }}</div>
+                <div style="font-size:13px;font-weight:700;padding-top:3px;color:{{ g.giftColor }}">{{ g.gift }}</div>
+                <div style="font-size:12px;opacity:.7;line-height:1.4;padding-top:2px">{{ g.msg }}</div>
+              </div>
+            </sc-for>
+            <div style="display:flex;align-items:center;gap:14px;padding:14px 18px 22px">
+              <div style="flex:1;font-size:12px;opacity:.6">{{ guestFootnote }}</div>
+              <button onClick="{{ textNoReplies }}" style="{{ nudgeStyle }}">{{ nudgeLabel }}</button>
+            </div>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ conIsGifts }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:vwIn .25s ease both;padding:18px">
+            <div style="display:flex;gap:18px;align-items:stretch">
+              <div style="flex:1;border:2px solid var(--color-text);padding:18px">
+                <div style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;opacity:.55">{{ cfgFundName }}</div>
+                <div style="font-family:var(--font-heading);font-weight:800;font-size:42px;letter-spacing:-.035em;margin-top:6px;color:{{ accent }}">{{ fundRaisedMoney }}</div>
+                <div style="height:12px;background:var(--color-neutral-200);margin-top:12px"><div style="height:100%;transition:width .5s ease;background:{{ accent }};width:{{ fundPct }}"></div></div>
+                <div style="font-size:12px;opacity:.6;margin-top:8px">{{ fundLine }}</div>
+                <div style="font-size:12px;line-height:1.6;opacity:.6;margin-top:14px">Payouts land in your account every Friday. Guests never see who gave what — only you do, here.</div>
+              </div>
+              <div style="flex:1;border:2px solid var(--color-text);padding:18px">
+                <div style="font-size:10px;letter-spacing:.14em;text-transform:uppercase;opacity:.55">Off the list</div>
+                <sc-for list="{{ giftLedger }}" as="l" hint-placeholder-count="4">
+                  <div style="display:flex;justify-content:space-between;gap:14px;align-items:baseline;padding:11px 0;border-bottom:1px solid var(--color-neutral-300)">
+                    <div><div style="font-size:13px;font-weight:600">{{ l.item }}</div><div style="font-size:11px;opacity:.5;margin-top:2px">{{ l.from }}</div></div>
+                    <div style="font-family:var(--font-heading);font-weight:800;font-size:15px">{{ l.amount }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <div style="margin-top:18px;border:2px solid var(--color-text)">
+              <div style="display:grid;grid-template-columns:1.6fr 1.4fr 0.9fr 1fr;padding:10px 16px;border-bottom:2px solid var(--color-text);font-size:10px;letter-spacing:.14em;text-transform:uppercase;opacity:.55;font-weight:700">
+                <div>From</div><div>Toward</div><div>Amount</div><div>When</div>
+              </div>
+              <sc-for list="{{ payments }}" as="p" hint-placeholder-count="6">
+                <div style="display:grid;grid-template-columns:1.6fr 1.4fr 0.9fr 1fr;padding:12px 16px;border-bottom:1px solid var(--color-neutral-300);font-size:13px;align-items:center">
+                  <div style="font-weight:600">{{ p.from }}</div>
+                  <div style="opacity:.75">{{ p.toward }}</div>
+                  <div style="font-family:var(--font-heading);font-weight:800">{{ p.amount }}</div>
+                  <div style="opacity:.55;font-size:12px">{{ p.when }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ conIsPhotos }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:vwIn .25s ease both;padding:18px">
+            <div style="display:flex;justify-content:space-between;align-items:baseline">
+              <div><div style="font-family:var(--font-heading);font-weight:800;font-size:26px;letter-spacing:-.03em;text-transform:uppercase">{{ photoCount }} photos in</div><div style="font-size:12px;opacity:.6;margin-top:5px">From 41 guests across three albums. You own the archive.</div></div>
+              <button onClick="{{ downloadAll }}" style="padding:11px 16px;border:2px solid var(--color-text);background:transparent;font-family:var(--font-heading);font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer" style-hover="background:var(--color-neutral-200)">Download archive</button>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(8,1fr);gap:3px;margin-top:18px">
+              <sc-for list="{{ consolePhotos }}" as="p" hint-placeholder-count="24">
+                <div style="aspect-ratio:1;display:flex;align-items:flex-end;padding:5px;font-size:8px;letter-spacing:.06em;text-transform:uppercase;color:rgba(32,30,29,.45);background:{{ p.bg }}">{{ p.tag }}</div>
+              </sc-for>
+            </div>
+            <div style="margin-top:16px;font-size:12px;line-height:1.6;opacity:.6">Top contributors: Kath Aldous (34), Priya Bhatt (28), Dan Fell (19). Anything a guest deletes on their phone stays in your archive.</div>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ conIsThanks }}" hint-placeholder-val="{{ false }}">
+          <div style="animation:vwIn .25s ease both;padding:18px">
+            <div style="display:flex;justify-content:space-between;align-items:baseline">
+              <div style="font-family:var(--font-heading);font-weight:800;font-size:26px;letter-spacing:-.03em;text-transform:uppercase">Thank-yous</div>
+              <div style="font-size:12px;font-weight:700">{{ thanksSent }} of {{ thanksTotal }} sent</div>
+            </div>
+            <div style="height:10px;background:var(--color-neutral-200);margin-top:12px"><div style="height:100%;transition:width .4s ease;background:{{ accent }};width:{{ thanksPct }}"></div></div>
+            <div style="font-size:12px;line-height:1.6;opacity:.65;margin-top:12px;max-width:640px">Each card is drafted from what the console already knows — who gave what, who sat where, which photos they're in. Edit and send.</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px">
+              <sc-for list="{{ thanks }}" as="t" hint-placeholder-count="4">
+                <div style="{{ t.cardStyle }}">
+                  <div style="display:flex;gap:14px">
+                    <div style="width:76px;height:76px;flex:none;background:var(--color-neutral-300);display:flex;align-items:flex-end;padding:6px;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:rgba(32,30,29,.5)">{{ t.photoTag }}</div>
+                    <div style="flex:1;min-width:0">
+                      <div style="font-family:var(--font-heading);font-weight:700;font-size:15px;letter-spacing:-.01em">{{ t.from }}</div>
+                      <div style="font-size:12px;opacity:.6;margin-top:2px">{{ t.gift }}</div>
+                      <div style="font-size:12px;line-height:1.5;opacity:.75;margin-top:8px;font-style:italic">"{{ t.draft }}"</div>
+                    </div>
+                  </div>
+                  <div style="display:flex;gap:8px;margin-top:12px">
+                    <button onClick="{{ t.send }}" style="{{ t.sendStyle }}">{{ t.sendLabel }}</button>
+                    <button onClick="{{ t.reroll }}" style="flex:none;padding:10px 14px;border:2px solid var(--color-text);background:transparent;font-family:var(--font-heading);font-weight:700;font-size:12px;cursor:pointer" style-hover="background:var(--color-neutral-200)">Rewrite</button>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          </sc-if>
+
+        </div>
+
+        <sc-if value="{{ consoleToast }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:none;padding:13px 18px;background:var(--color-text);color:var(--color-bg);font-size:13px;font-weight:600">{{ consoleToast }}</div>
+        </sc-if>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;appName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Ribbet&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Brand&quot;},&quot;nameOne&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Nadia&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Seed data&quot;},&quot;nameTwo&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Theo&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Seed data&quot;},&quot;weddingDate&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Saturday 12 September 2026&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Seed data&quot;},&quot;venue&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Hartwell Barn, Somerset&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Seed data&quot;},&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#1d3f8a&quot;,&quot;options&quot;:[&quot;#ec3013&quot;,&quot;#1d3f8a&quot;,&quot;#2f6b43&quot;,&quot;#7a4a86&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Brand&quot;},&quot;currency&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;$&quot;,&quot;options&quot;:[&quot;£&quot;,&quot;$&quot;,&quot;€&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Gifts&quot;},&quot;fundName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Home&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Gifts&quot;},&quot;fundGoal&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:10000,&quot;min&quot;:500,&quot;max&quot;:40000,&quot;step&quot;:500,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Gifts&quot;},&quot;daysToGo&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:37,&quot;min&quot;:0,&quot;max&quot;:365,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Seed data&quot;},&quot;rsvpDeadline&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;1 September&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Seed data&quot;}}">
+class Component extends DCLogic {
+  base = [
+    {name:'Rosa Marchetti', rel:'University, bride', rsvp:'Coming', party:2, diet:'Gluten-free', gift:180, item:'Copper pan set', msg:'Wouldn\u2019t miss it. Save me a dance.'},
+    {name:'James Dell', rel:'University, bride', rsvp:'Coming', party:1, diet:'—', gift:50, item:'Fund', msg:''},
+    {name:'Kath Aldous', rel:'Aunt, groom', rsvp:'Coming', party:2, diet:'No shellfish', gift:0, item:'', msg:'Bringing the trifle whether you like it or not.'},
+    {name:'Sam O\u2019Neill', rel:'Neighbour', rsvp:'Coming', party:2, diet:'—', gift:340, item:'Record player', msg:''},
+    {name:'Priya Bhatt', rel:'Work, bride', rsvp:'Coming', party:1, diet:'Vegetarian', gift:95, item:'Ten olive trees', msg:''},
+    {name:'Tom & Wren Ward', rel:'School friends', rsvp:'Declined', party:0, diet:'—', gift:75, item:'Fund', msg:'Devastated — we\u2019re in Chile that week.'},
+    {name:'Hana Noor', rel:'Work, groom', rsvp:'Coming', party:2, diet:'Vegan', gift:0, item:'', msg:''},
+    {name:'Dan Fell', rel:'Rugby', rsvp:'No reply', party:2, diet:'—', gift:0, item:'', msg:''},
+    {name:'Elle Voss', rel:'Sister of the groom', rsvp:'Coming', party:2, diet:'Dairy-free', gift:120, item:'Fund', msg:'Speech is written. Be afraid.'},
+    {name:'Milo Reyes', rel:'Plus one', rsvp:'No reply', party:1, diet:'—', gift:0, item:'', msg:''},
+    {name:'Lena Moss', rel:'Cousin', rsvp:'Coming', party:1, diet:'Nut allergy', gift:40, item:'Fund', msg:''},
+    {name:'Greg Aldous', rel:'Uncle, groom', rsvp:'No reply', party:2, diet:'—', gift:0, item:'', msg:''},
+    {name:'Nina Okafor', rel:'Work, bride', rsvp:'Coming', party:1, diet:'—', gift:60, item:'Fund', msg:'Can I bring my dog. Serious question.'},
+    {name:'Ben Trelawny', rel:'School friend', rsvp:'No reply', party:2, diet:'—', gift:0, item:'', msg:''}
+  ];
+
+  constructor(props){
+    super(props);
+    this.state = {
+      n1: props.nameOne ?? 'Nadia', n2: props.nameTwo ?? 'Theo',
+      date: props.weddingDate ?? 'Saturday 12 September 2026',
+      venue: props.venue ?? 'Hartwell Barn, Somerset',
+      accent: props.accent ?? '#1d3f8a',
+      fundName: props.fundName ?? 'Home fund',
+      goal: String(props.fundGoal ?? 10000),
+      mods: {gifts:true, day:true, photos:true},
+      screen:'home', rsvpStep:1, attending:null, diets:[], note:'',
+      extraFund:0, given:{}, album:'All', photoCount:214,
+      sheet:null, amount:50, toastMsg:null,
+      dayTab:'Schedule', table:null,
+      con:'guests', filter:'All', sent:{}, rerolled:{},
+      contacts:'ask', picked:null, invitesSent:false, slug:null,
+      myRsvp:null, copied:false, consoleToast:null
+    };
+  }
+
+  say(m){ clearTimeout(this._t); this.setState({toastMsg:m}); this._t=setTimeout(()=>this.setState({toastMsg:null}),2600); }
+  cSay(m){ clearTimeout(this._c); this.setState({consoleToast:m}); this._c=setTimeout(()=>this.setState({consoleToast:null}),2800); }
+  go = s => this.setState({screen:s});
+  money(n){ return (this.props.currency ?? '$') + Math.round(n).toLocaleString(); }
+  clean(s){ return String(s).toLowerCase().replace(/[^a-z0-9-]+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,''); }
+  autoSlug(){ return this.clean(`${this.state.n1}-${this.state.n2}`) || 'our-wedding'; }
+  slugOf(){ return this.state.slug === null ? this.autoSlug() : (this.clean(this.state.slug) || 'our-wedding'); }
+
+  guestData(){
+    const S = this.state;
+    return this.base.map(g => {
+      if (g.name !== 'Rosa Marchetti') return g;
+      const rsvp = S.myRsvp === 'no' ? 'Declined' : S.myRsvp ? 'Coming' : g.rsvp;
+      const party = S.myRsvp === 'no' ? 0 : S.myRsvp === 'one' ? 1 : S.myRsvp === 'yes' ? 2 : g.party;
+      return {...g, rsvp, party,
+        diet: S.diets.length ? S.diets.join(', ') : g.diet,
+        gift: g.gift + S.extraFund,
+        msg: S.note || g.msg};
+    });
+  }
+
+  renderVals(){
+    const S = this.state, P = this.props;
+    const accent = S.accent;
+    const goal = Math.max(500, parseInt(S.goal, 10) || 4000);
+    const data = this.guestData();
+    const raised = data.reduce((a,g)=>a+g.gift, 0) + 1240;
+    const coming = data.filter(g=>g.rsvp==='Coming').reduce((a,g)=>a+g.party,0);
+    const noReply = data.filter(g=>g.rsvp==='No reply').length;
+    const declined = data.filter(g=>g.rsvp==='Declined').length;
+    const seats = 2;
+
+    const cta = `padding:15px 18px;border:2px solid ${accent};background:${accent};color:#fff;font-family:var(--font-heading);font-weight:700;font-size:14px;text-align:left;cursor:pointer;width:100%`;
+
+    // Setup panel
+    const swatches = ['#ec3013','#1d3f8a','#2f6b43','#7a4a86','#201e1d'].map(c=>({
+      pick: () => this.setState({accent:c}),
+      style: `width:38px;height:38px;border:${S.accent===c?'3px solid var(--color-text)':'2px solid rgba(32,30,29,.25)'};background:${c};cursor:pointer;padding:0`
+    }));
+    const modDefs = [['gifts','Gift list & fund','Payments'],['day','Schedule & seating','Day-of'],['photos','Shared photo roll','Album']];
+    const moduleToggles = modDefs.map(([k,label,note])=>{
+      const on = S.mods[k];
+      return { label, note, fill: on ? accent : 'transparent',
+        toggle: () => this.setState(st=>({mods:{...st.mods,[k]:!st.mods[k]}})),
+        style: `display:flex;align-items:center;gap:11px;padding:12px;border:2px solid ${on?'var(--color-text)':'var(--color-neutral-300)'};background:transparent;cursor:pointer;color:var(--color-text);opacity:${on?1:.55}` };
+    });
+
+    // Guest app tabs
+    const tabDef = [['home','Home','◈'],['rsvp','RSVP','✓']]
+      .concat(S.mods.gifts ? [['gifts','Gifts','◆']] : [])
+      .concat(S.mods.day ? [['day','The day','◐']] : [])
+      .concat(S.mods.photos ? [['photos','Photos','▣']] : []);
+    const active = tabDef.some(t=>t[0]===S.screen) ? S.screen : 'home';
+    const tabs = tabDef.map(([id,label,icon])=>({
+      label, icon, go: () => this.go(id),
+      style: `display:flex;flex-direction:column;align-items:center;gap:5px;padding:12px 2px 10px;border:0;background:${active===id?'var(--color-text)':'transparent'};color:${active===id?'var(--color-bg)':'var(--color-text)'};cursor:pointer;opacity:${active===id?1:.6}`
+    }));
+
+    const attendOpts = [['yes','Both of us, gladly'],['one','Just me'],['no','Sadly not']].map(([v,label])=>({
+      label, dot: S.attending===v ? accent : 'transparent',
+      pick: () => this.setState({attending:v}),
+      style: `display:flex;align-items:center;gap:12px;width:100%;padding:16px;border:2px solid ${S.attending===v?accent:'var(--color-text)'};background:${S.attending===v?'var(--color-neutral-200)':'transparent'};text-align:left;cursor:pointer;color:${S.attending===v?accent:'var(--color-text)'}`
+    }));
+    const diets = ['Vegetarian','Vegan','Gluten-free','Dairy-free','Nut allergy','No shellfish'].map(label=>{
+      const on = S.diets.includes(label);
+      return { label, toggle: () => this.setState(st=>({diets: on ? st.diets.filter(d=>d!==label) : [...st.diets,label]})),
+        style: `padding:9px 13px;border:2px solid ${on?accent:'var(--color-text)'};background:${on?accent:'transparent'};color:${on?'#fff':'var(--color-text)'};font-size:13px;font-weight:600;cursor:pointer` };
+    });
+
+    const giftDefs = [['Copper pan set','Divot & Sons',180,60],['A night in Kyoto','Part of the fund',220,35],['Record player','Rega Planar',340,90],['Ten olive trees','Planted in Puglia',95,100]];
+    const gifts = giftDefs.map(([name,meta,price,pct])=>{
+      const claimed = pct>=100 || S.given[name];
+      return { name, meta: `${meta} · ${this.money(price)}`, pct: (S.given[name]?Math.min(100,pct+25):pct)+'%',
+        btn: claimed?'Claimed':'Chip in',
+        give: claimed ? (()=>{}) : (()=>this.setState({sheet:name})),
+        btnStyle: `flex:none;align-self:center;padding:10px 12px;border:2px solid ${claimed?'var(--color-neutral-400)':'var(--color-text)'};background:transparent;font-family:var(--font-heading);font-weight:700;font-size:12px;cursor:${claimed?'default':'pointer'};opacity:${claimed?.45:1}` };
+    });
+
+    const albums = ['All','Ceremony','The night'].map(label=>({
+      label, pick: () => this.setState({album:label}),
+      style: `flex:1;padding:10px;border:2px solid var(--color-text);background:${S.album===label?'var(--color-text)':'transparent'};color:${S.album===label?'var(--color-bg)':'var(--color-text)'};font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer`
+    }));
+    const tones = ['var(--color-neutral-200)','var(--color-neutral-300)','var(--color-neutral-400)'];
+    const tagFor = S.album==='All' ? ['Ceremony','The night','Prep'] : [S.album];
+    const photoCells = Array.from({length:12},(_,i)=>({bg:tones[i%3], tag:tagFor[i%tagFor.length]}));
+    const consolePhotos = Array.from({length:24},(_,i)=>({bg:tones[i%3], tag:['Ceremony','The night','Prep'][i%3]}));
+
+    const amounts = [25,50,100,'Other'].map(v=>({
+      label: typeof v==='number' ? this.money(v) : v,
+      pick: () => this.setState({amount: typeof v==='number'?v:75}),
+      style: `flex:1;padding:12px 4px;border:2px solid ${S.amount===v?accent:'var(--color-text)'};background:${S.amount===v?accent:'transparent'};color:${S.amount===v?'#fff':'var(--color-text)'};font-family:var(--font-heading);font-weight:700;font-size:13px;cursor:pointer`
+    }));
+
+    const dayTabs = ['Schedule','Seating'].map(label=>({
+      label, pick: () => this.setState({dayTab:label}),
+      style: `flex:1;padding:10px;border:2px solid var(--color-text);background:${S.dayTab===label?'var(--color-text)':'transparent'};color:${S.dayTab===label?'var(--color-bg)':'var(--color-text)'};font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer`
+    }));
+    const schedule = [
+      ['2:15','Shuttle leaves','Castle Cary station','past'],
+      ['3:00','Ceremony','The old orchard','now'],
+      ['3:45','Drinks & photographs','South lawn','next'],
+      ['6:00','Dinner','The barn',''],
+      ['8:30','Speeches','The barn',''],
+      ['9:30','Dancing','The barn',''],
+      ['12:30','Last shuttle','Front gate','']
+    ].map(([time,title,where,st])=>({
+      time,title,where,
+      badge: st==='now'?'Now':st==='next'?'Next':st==='past'?'Done':'',
+      rowStyle: `display:flex;gap:14px;align-items:flex-start;padding:15px 22px;border-bottom:1px solid var(--color-neutral-300);opacity:${st==='past'?.42:1};background:${st==='now'?'var(--color-neutral-200)':'transparent'}`,
+      badgeStyle: st ? `flex:none;padding:4px 8px;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;border:2px solid ${st==='now'?accent:'var(--color-text)'};color:${st==='now'?'#fff':'var(--color-text)'};background:${st==='now'?accent:'transparent'}` : 'display:none'
+    }));
+    const myTable = 7, selected = S.table ?? myTable;
+    const tables = Array.from({length:12},(_,i)=>i+1).map(n=>({
+      n, pick: () => this.setState({table:n}),
+      style: `aspect-ratio:1;border:2px solid ${n===myTable?accent:'var(--color-text)'};background:${selected===n?'var(--color-text)':'transparent'};color:${selected===n?'var(--color-bg)':'var(--color-text)'};font-family:var(--font-heading);font-weight:800;font-size:15px;cursor:pointer`
+    }));
+    const sets = {
+      7: [['RM','Rosa Marchetti','University, bride'],['JD','James Dell','University, bride'],['AK','Kath Aldous','Aunt, groom'],['SO','Sam O\u2019Neill','Neighbour'],['PB','Priya Bhatt','Work, bride'],['YOU','You','—']],
+      other: [['LM','Lena Moss','Cousin'],['HN','Hana Noor','Work, groom'],['DF','Dan Fell','Rugby'],['EV','Elle Voss','Sister of the groom'],['NO','Nina Okafor','Work, bride'],['MR','Milo Reyes','Plus one']]
+    };
+    const tableGuests = (sets[selected]||sets.other).map(([ini,name,rel])=>({ini,name,rel}));
+
+    // Console
+    const conDefs = [['guests','Guests & RSVP'],['gifts','Gifts & money'],['photos','Photos'],['thanks','Thank-yous']];
+    const consoleTabs = conDefs.map(([id,label])=>({
+      label, pick: () => this.setState({con:id}),
+      style: `padding:10px 15px;border:2px solid var(--color-text);background:${S.con===id?'var(--color-text)':'transparent'};color:${S.con===id?'var(--color-bg)':'var(--color-text)'};font-family:var(--font-heading);font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer`
+    }));
+    const filterDefs = ['All','Coming','No reply','Declined','Gave a gift'];
+    const filters = filterDefs.map(label=>({
+      label, pick: () => this.setState({filter:label}),
+      style: `padding:9px 14px;border:2px solid var(--color-text);background:${S.filter===label?accent:'transparent'};color:${S.filter===label?'#fff':'var(--color-text)'};font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer`
+    }));
+    const filtered = data.filter(g =>
+      S.filter==='All' ? true :
+      S.filter==='Gave a gift' ? g.gift>0 : g.rsvp===S.filter);
+    const pill = {
+      'Coming': `display:inline-block;padding:4px 9px;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;border:2px solid ${accent};background:${accent};color:#fff`,
+      'Declined': 'display:inline-block;padding:4px 9px;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;border:2px solid var(--color-neutral-400);color:var(--color-text);opacity:.6',
+      'No reply': 'display:inline-block;padding:4px 9px;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;border:2px dashed var(--color-text)'
+    };
+    const guestRows = filtered.map((g,i)=>({
+      name:g.name, rel:g.rel, rsvp:g.rsvp, party: g.party || '—',
+      diet: g.diet, msg: g.msg || '—',
+      gift: g.gift ? this.money(g.gift) : '—',
+      giftColor: g.gift ? accent : 'var(--color-text)',
+      pillStyle: pill[g.rsvp],
+      rowStyle: `display:grid;grid-template-columns:1.9fr 1fr 0.6fr 1.3fr 1.2fr 1.7fr;gap:8px;padding:13px 18px;border-bottom:1px solid var(--color-neutral-300);align-items:start;background:${i%2?'transparent':'rgba(32,30,29,.02)'}`
+    }));
+
+    const kpis = [
+      {value: coming, label:'Guests coming', sub:`${data.filter(g=>g.rsvp==='Coming').length} households`},
+      {value: noReply, label:'No reply', sub:'Nudge sent 4 days ago'},
+      {value: declined, label:'Declined', sub:'Seats freed'},
+      {value: this.money(raised), label:'Gifted', sub:`${Math.min(100,Math.round(raised/goal*100))}% of goal`, color: accent},
+      {value: S.photoCount, label:'Photos in', sub:'41 contributors'}
+    ].map((k,i)=>({...k, color: k.color || 'var(--color-text)',
+      style: `padding:16px 18px;${i<4?'border-right:2px solid var(--color-divider);':''}`}));
+
+    const payments = data.filter(g=>g.gift>0).map((g,i)=>({
+      from:g.name, toward: g.item==='Fund' ? S.fundName : g.item,
+      amount: this.money(g.gift), when: ['12 min ago','1 hr ago','Yesterday','2 days ago','3 days ago','Last week'][i%6]
+    }));
+    const giftLedger = [
+      {item:'Copper pan set', from:'Rosa Marchetti', amount:this.money(180)},
+      {item:'Record player', from:'Sam O\u2019Neill', amount:this.money(340)},
+      {item:'Ten olive trees', from:'Priya Bhatt', amount:this.money(95)},
+      {item:'A night in Kyoto', from:'3 guests, part-funded', amount:this.money(77)}
+    ];
+
+    const thankDefs = [
+      ['Rosa Marchetti','Copper pan set','The pans have not left the hob since we got back. Thank you — and thank you for dancing until the very end.','Dancing'],
+      ['James Dell', S.fundName, `Your ${this.money(50)} bought us the best dinner of the trip. We raised a glass to you.`,'Kyoto'],
+      ['Sam O\u2019Neill','Record player','The Rega has been on every Sunday morning since. Perfect, thank you.','Speeches'],
+      ['Priya Bhatt','Ten olive trees','We have trees now. In Puglia. Because of you. Still slightly stunned.','Orchard']
+    ];
+    const alts = ['Shorter, warmer','Funnier','More formal'];
+    const thanks = thankDefs.map(([from,gift,draft,photoTag])=>{
+      const sent = !!S.sent[from], roll = S.rerolled[from]||0;
+      return { from, gift, photoTag,
+        draft: roll ? `${draft.split('.')[0]}. (${alts[(roll-1)%3]} draft.)` : draft,
+        sendLabel: sent?'Sent ✓':'Send card',
+        sendStyle: sent
+          ? 'flex:1;padding:10px 14px;border:2px solid var(--color-neutral-400);background:transparent;font-family:var(--font-heading);font-weight:700;font-size:12px;text-align:left;opacity:.5;cursor:default'
+          : `flex:1;padding:10px 14px;border:2px solid ${accent};background:${accent};color:#fff;font-family:var(--font-heading);font-weight:700;font-size:12px;text-align:left;cursor:pointer`,
+        send: sent ? (()=>{}) : (()=>{ this.setState(st=>({sent:{...st.sent,[from]:true}})); this.cSay(`Thank-you sent to ${from.split(' ')[0]}`); }),
+        reroll: () => this.setState(st=>({rerolled:{...st.rerolled,[from]:(st.rerolled[from]||0)+1}})),
+        cardStyle: `border:2px solid var(--color-text);padding:16px;opacity:${sent?.55:1}` };
+    });
+    const thanksSent = Object.keys(S.sent).length;
+
+    const todos = [
+      {n:'1', title:'RSVP for two', sub:`Closes ${P.rsvpDeadline ?? '1 September'}`, go:()=>this.go('rsvp')},
+      S.mods.gifts ? {n:'2', title:'Pick a gift', sub:'11 things left on the list', go:()=>this.go('gifts')} : null,
+      S.mods.photos ? {n: S.mods.gifts?'3':'2', title:'Add your photos', sub:'From the engagement dinner', go:()=>this.go('photos')} : null
+    ].filter(Boolean);
+
+    // Contacts
+    const phoneFor = (name, i) => i % 7 === 3 ? null : `+44 7${String(700 + i * 13).slice(0,3)} ${String(100000 + i * 4127).slice(0,6)}`;
+    const contactBook = data.map((g, i) => ({ name: g.name, phone: phoneFor(g.name, i), rsvp: g.rsvp }));
+    const matched = contactBook.filter(c => c.phone);
+    const picked = S.picked === null ? matched.map(c => c.name) : S.picked;
+    const contactRows = contactBook.map(c => {
+      const on = !!c.phone && picked.includes(c.name);
+      const alreadyIn = c.rsvp !== 'No reply' && S.invitesSent;
+      return { name: c.name, phone: c.phone || 'No number in contacts',
+        fill: on ? accent : 'transparent',
+        tag: !c.phone ? 'Add' : alreadyIn ? 'Replied' : 'Text',
+        tagStyle: `flex:none;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;padding:3px 6px;border:2px solid ${c.phone ? 'var(--color-text)' : 'var(--color-neutral-400)'};opacity:${c.phone ? .8 : .45}`,
+        toggle: () => { if (!c.phone) return this.cSay(`Add a number for ${c.name.split(' ')[0]}`);
+          this.setState({picked: on ? picked.filter(n => n !== c.name) : [...picked, c.name]}); },
+        style: `display:flex;align-items:center;gap:10px;width:100%;padding:11px 12px;border:0;border-bottom:1px solid var(--color-neutral-300);background:transparent;cursor:pointer;color:var(--color-text);opacity:${c.phone ? 1 : .45}` };
+    });
+
+    const slug = this.slugOf();
+    const taken = ['wedding','amara','love','us','thebigday','smith'];
+    const short = slug.length < 4;
+    const isTaken = taken.includes(slug);
+    const slugOk = !short && !isTaken;
+    const slugNote = short ? 'A little longer — at least 4 characters.'
+      : isTaken ? `ribbet.app/${slug} is taken. Try adding the year.`
+      : `ribbet.app/${slug} is free — it's yours until a year after the wedding.`;
+    const a = this.clean(S.n1) || 'you', b = this.clean(S.n2) || 'them';
+    const yr = String(S.date).match(/(20\d\d)/);
+    const ideas = [`${a}and${b}`, `${a}${b}${yr ? yr[1].slice(2) : '26'}`, `the${b}wedding`].map(v => ({
+      label: v,
+      pick: () => this.setState({slug: v}),
+      style: `padding:7px 10px;border:2px solid ${slug === v ? accent : 'var(--color-neutral-300)'};background:transparent;color:${slug === v ? accent : 'var(--color-text)'};font-size:11px;font-weight:700;cursor:pointer`
+    }));
+
+    return {
+      cfgSlug: S.slug === null ? this.autoSlug() : S.slug,
+      setSlug: e => this.setState({slug: e.target.value}),
+      slugIdeas: ideas,
+      slugNote,
+      slugNoteStyle: `margin-top:8px;font-size:12px;line-height:1.5;font-weight:${slugOk ? 400 : 700};color:${slugOk ? 'var(--color-text)' : '#b8240e'};opacity:${slugOk ? .65 : 1}`,
+      contactsAsk: S.contacts === 'ask',
+      contactsOn: S.contacts === 'granted',
+      contactsDenied: S.contacts === 'denied',
+      allowContacts: () => { this.setState({contacts:'granted'}); },
+      denyContacts: () => this.setState({contacts:'denied'}),
+      askAgain: () => this.setState({contacts:'ask'}),
+      contactRows, matchedCount: matched.length, unmatchedCount: contactBook.length - matched.length,
+      sendInvitesLabel: S.invitesSent ? `Invites sent to ${picked.length} ✓` : `Text the invite to ${picked.length} →`,
+      sendInvitesStyle: S.invitesSent
+        ? 'width:100%;margin-top:12px;padding:13px 16px;border:2px solid var(--color-neutral-400);background:transparent;font-family:var(--font-heading);font-weight:700;font-size:13px;text-align:left;opacity:.55;cursor:default'
+        : `width:100%;margin-top:12px;padding:13px 16px;border:2px solid ${accent};background:${accent};color:#fff;font-family:var(--font-heading);font-weight:700;font-size:13px;text-align:left;cursor:pointer`,
+      sendInvites: () => { if (S.invitesSent) return;
+        this.setState({invitesSent:true});
+        this.cSay(`${picked.length} invites texted — each with their own ribbet.app/${slug} link`); },
+      nudgeLabel: S.contacts === 'granted' ? `Text ${noReply} non-repliers` : 'Turn on contacts to text',
+      nudgeStyle: `flex:none;padding:10px 15px;border:2px solid ${S.contacts === 'granted' ? accent : 'var(--color-text)'};background:${S.contacts === 'granted' ? accent : 'transparent'};color:${S.contacts === 'granted' ? '#fff' : 'var(--color-text)'};font-family:var(--font-heading);font-weight:700;font-size:12px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer`,
+      textNoReplies: () => S.contacts === 'granted'
+        ? this.cSay(`Reminder texted to ${noReply} households — one message, no follow-up spam`)
+        : this.cSay('Contacts access is off — turn it on in setup'),
+      appName: P.appName ?? 'Vow',
+      accent,
+      cfgName1:S.n1, cfgName2:S.n2, cfgDate:S.date, cfgVenue:S.venue,
+      cfgFundName:S.fundName, cfgGoal:S.goal,
+      setName1:e=>this.setState({n1:e.target.value}), setName2:e=>this.setState({n2:e.target.value}),
+      setDate:e=>this.setState({date:e.target.value}), setVenue:e=>this.setState({venue:e.target.value}),
+      setFundName:e=>this.setState({fundName:e.target.value}), setGoal:e=>this.setState({goal:e.target.value}),
+      swatches, moduleToggles,
+      inviteLink: `ribbet.app/${slug}`,
+      consoleUrl: `ribbet.app/${slug}/console`,
+      copyLabel: S.copied ? 'Copied ✓' : 'Copy invite link',
+      ctaSmall: `flex:1;padding:11px 14px;border:2px solid ${accent};background:${accent};color:#fff;font-family:var(--font-heading);font-weight:700;font-size:12px;cursor:pointer`,
+      copyLink: () => { this.setState({copied:true}); setTimeout(()=>this.setState({copied:false}),1800); },
+      resetDemo: () => this.setState({screen:'home',rsvpStep:1,attending:null,diets:[],note:'',extraFund:0,given:{},myRsvp:null,sent:{},rerolled:{},photoCount:214,filter:'All'}),
+
+      screenLabel: {home:'Home',rsvp:'RSVP',gifts:'Gifts',day:'The day',photos:'Photos'}[active],
+      isHome:active==='home', isRsvp:active==='rsvp', isGifts:active==='gifts', isDay:active==='day', isPhotos:active==='photos',
+      tabs, tabCols:`repeat(${tabDef.length},1fr)`, todos, todoCount:todos.length,
+      daysToGo: P.daysToGo ?? 37, seatsHeld: seats,
+      ctaStyle: cta, ctaStyleWide: cta+';margin-top:18px',
+      rsvpStep:S.rsvpStep, rsvpTitle:{1:'Will you come?',2:'At the table',3:'That\u2019s it'}[S.rsvpStep],
+      rsvpPct:(S.rsvpStep/3*100)+'%',
+      rsvpIs1:S.rsvpStep===1, rsvpIs2:S.rsvpStep===2, rsvpIs3:S.rsvpStep===3,
+      rsvpIntro: `${S.n1} & ${S.n2} have held two seats for you at ${String(S.venue).split(',')[0]}.`,
+      attendOpts, diets, setNote:e=>this.setState({note:e.target.value}),
+      summary: [
+        {k:'Attending', v:{yes:'2 guests',one:'1 guest',no:'Not attending'}[S.attending]||'—'},
+        {k:'Kitchen', v:S.diets.length?S.diets.join(', '):'No notes'},
+        {k:'Message', v:S.note||'—'},
+        {k:'Transport', v:'Shuttle from the station, 2:15'}
+      ],
+      rsvpAnswerLine: {yes:'Two seats held.',one:'One seat held.',no:'We\u2019ll miss you.'}[S.attending] || 'Pick an answer first.',
+      rsvpCta: S.rsvpStep===3?'Send it':'Continue',
+      rsvpBack: () => S.rsvpStep===1 ? this.go('home') : this.setState({rsvpStep:S.rsvpStep-1}),
+      rsvpNext: () => {
+        if (S.rsvpStep===1 && !S.attending) return this.say('Choose an answer first');
+        if (S.rsvpStep<3) return this.setState({rsvpStep:S.rsvpStep+1});
+        this.setState({myRsvp:S.attending, con:'guests', filter:'All'});
+        this.say('RSVP sent — it\u2019s in the console now'); this.go('home');
+      },
+      gifts, fundPct: Math.min(100,Math.round(raised/goal*100))+'%',
+      fundLine: `${this.money(raised)} of ${this.money(goal)} from ${data.filter(g=>g.gift>0).length + 9} guests`,
+      fundRaisedMoney: this.money(raised),
+      openGive: () => this.setState({sheet: S.fundName.toLowerCase()}),
+      albums, photoCells, consolePhotos, photoCount:S.photoCount,
+      addPhoto: () => { this.setState(st=>({photoCount:st.photoCount+9})); this.say('9 photos added to the shared roll'); },
+      dayTabs, dayIsSchedule:S.dayTab==='Schedule', dayIsSeating:S.dayTab==='Seating',
+      schedule, tables, myTable, selectedTable:selected, tableGuests,
+      sheetOpen: !!S.sheet,
+      sheetBody: S.sheet ? `Toward ${S.sheet}. Split with whoever else gives — no one has to cover the whole thing.` : '',
+      sheetCta: `Give ${this.money(S.amount)} →`, amounts,
+      closeSheet: () => this.setState({sheet:null}),
+      confirmGive: () => {
+        const name = S.sheet;
+        this.setState(st=>({extraFund: st.extraFund + st.amount, sheet:null, given:{...st.given,[name]:true}, con:'gifts'}));
+        this.say(`${this.money(S.amount)} sent — thank you`);
+      },
+      toast:S.toastMsg, consoleToast:S.consoleToast,
+
+      consoleTabs, conIsGuests:S.con==='guests', conIsGifts:S.con==='gifts',
+      conIsPhotos:S.con==='photos', conIsThanks:S.con==='thanks',
+      kpis, filters, guestRows,
+      guestFootnote: `${filtered.length} of ${data.length} households shown · ${S.filter}`,
+      payments, giftLedger,
+      exportCsv: () => this.cSay('guests.csv exported — RSVP, party size, dietary, gift amount, message'),
+      downloadAll: () => this.cSay('Preparing full-resolution archive (2.1 GB)'),
+      thanks, thanksSent, thanksTotal: thankDefs.length,
+      thanksPct: Math.round(thanksSent/thankDefs.length*100)+'%'
+    };
+  }
+}
+</script>
+</body>
+</html>

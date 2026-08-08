@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Libre+Caslon+Text:ital@0;1&family=Karla:wght@400;700;800&display=swap" rel="stylesheet">
+<meta name="design_doc_mode" content="canvas">
+<style>
+body{margin:0;background:#e6e4e2}
+*{-webkit-font-smoothing:antialiased}
+.rb::-webkit-scrollbar{width:0;height:0}
+.rb{scrollbar-width:none}
+button,input{font-family:inherit}
+a{color:#b98d4f}a:hover{color:#96703a}
+@keyframes rbIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:#e6e4e2;font-family:Karla,sans-serif;color:#201e1d;padding:44px 44px 80px">
+  <div style="display:flex;align-items:baseline;gap:16px;border-bottom:2px solid #201e1d;padding-bottom:14px">
+    <span style="font-family:Fraunces,serif;font-weight:600;font-size:26px;letter-spacing:-.02em">Ribbet</span>
+    <span style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.6">Stage 2 + 3 — intake, then design</span>
+    <span style="margin-left:auto;font-size:11px;letter-spacing:.14em;text-transform:uppercase;opacity:.5">Post-purchase · desktop</span>
+  </div>
+  <p style="max-width:840px;font-size:14px;line-height:1.6;opacity:.72;margin:14px 0 26px;text-wrap:pretty">What a couple sees the moment they've paid. Google sign-in is required and non-optional — the whole product writes into their Drive. Then the details, the sections they want, and the look. Click through the steps; the phone on the right is live.</p>
+
+  <div style="display:flex;gap:36px;align-items:flex-start">
+
+    <div style="flex:none;width:880px;height:860px;background:#fff;border:2px solid #201e1d;box-shadow:0 24px 60px rgba(0,0,0,.18);display:flex;flex-direction:column;overflow:hidden">
+
+      <div style="flex:none;display:flex;border-bottom:2px solid #201e1d">
+        <sc-for list="{{ steps }}" as="s" hint-placeholder-count="5">
+          <button onClick="{{ s.go }}" style="{{ s.style }}">
+            <span style="{{ s.numStyle }}">{{ s.n }}</span>
+            <span style="text-align:left"><span style="display:block;font-size:12px;font-weight:800;letter-spacing:.04em">{{ s.label }}</span><span style="display:block;font-size:10px;opacity:.6;margin-top:2px">{{ s.sub }}</span></span>
+          </button>
+        </sc-for>
+      </div>
+
+      <div class="rb" style="flex:1;min-height:0;overflow-y:auto">
+
+        <!-- STEP 1 · GOOGLE -->
+        <sc-if value="{{ isGoogle }}" hint-placeholder-val="{{ true }}">
+        <div style="animation:rbIn .25s ease both;padding:44px 54px">
+          <div style="font-family:Fraunces,serif;font-size:38px;line-height:1.1;max-width:520px">Connect the Google account you want this wedding to live in.</div>
+          <div style="margin-top:14px;font-size:14px;line-height:1.65;opacity:.72;max-width:560px">Ribbet doesn't keep your wedding on our servers — it builds inside your Drive. That's why this step isn't skippable, and why everything survives us.</div>
+
+          <div style="margin-top:22px;padding:15px 17px;border-left:3px solid {{ accent }};background:#faf8f4;max-width:600px">
+            <div style="font-size:12px;font-weight:800;letter-spacing:.04em">One permission. The narrowest one Google offers.</div>
+            <div style="font-size:12.5px;line-height:1.6;opacity:.72;margin-top:6px">Ribbet asks for <strong>drive.file</strong> — access to files this app creates, and nothing else. Not your mail, not your photos, not a single file that was already in your Drive. Google classes it non-sensitive, which is why you won't see a scary unverified-app warning.</div>
+          </div>
+
+          <div style="margin-top:28px;display:flex;gap:14px;align-items:stretch;max-width:640px">
+            <div style="flex:1;border:2px solid #e0dcd4;padding:16px">
+              <div style="color:{{ accent }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15.5 9 4h6l6 11.5"/><path d="M3 15.5 6 20h12l3-4.5"/><path d="M9 4 15 15.5H3"/></svg></div>
+              <div style="font-size:13px;font-weight:800;margin-top:9px">A Drive folder</div>
+              <div style="font-size:12px;line-height:1.5;opacity:.65;margin-top:4px">Every guest photo lands here, full resolution, private to you.</div>
+            </div>
+            <div style="flex:1;border:2px solid #e0dcd4;padding:16px">
+              <div style="color:{{ accent }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 9v12"/></svg></div>
+              <div style="font-size:13px;font-weight:800;margin-top:9px">One spreadsheet</div>
+              <div style="font-size:12px;line-height:1.5;opacity:.65;margin-top:4px">Created by Ribbet, so it falls under the same single permission. RSVPs, meals, songs, gifts, thank-yous.</div>
+            </div>
+            <div style="flex:1;border:2px solid #e0dcd4;padding:16px">
+              <div style="color:{{ accent }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-5.6 7-11a7 7 0 1 0-14 0c0 5.4 7 11 7 11Z"/><circle cx="12" cy="10" r="2.6"/></svg></div>
+              <div style="font-size:13px;font-weight:800;margin-top:9px">It stays yours</div>
+              <div style="font-size:12px;line-height:1.5;opacity:.65;margin-top:4px">Cancel Ribbet tomorrow and the folder and Sheet are still in your account.</div>
+            </div>
+          </div>
+
+          <sc-if value="{{ notSignedIn }}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{ signIn }}" style="margin-top:30px;display:flex;align-items:center;gap:12px;padding:14px 20px;background:#fff;border:2px solid #201e1d;cursor:pointer" style-hover="background:#f4f1ec">
+              <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M23 12.2c0-.8-.1-1.6-.2-2.3H12v4.5h6.2a5.3 5.3 0 0 1-2.3 3.5v2.9h3.7c2.2-2 3.4-5 3.4-8.6Z"/><path fill="#34A853" d="M12 23.5c3.1 0 5.7-1 7.6-2.8l-3.7-2.9c-1 .7-2.3 1.1-3.9 1.1-3 0-5.5-2-6.4-4.7H1.8v3A11.5 11.5 0 0 0 12 23.5Z"/><path fill="#FBBC05" d="M5.6 14.2a6.9 6.9 0 0 1 0-4.4v-3H1.8a11.5 11.5 0 0 0 0 10.4l3.8-3Z"/><path fill="#EA4335" d="M12 5.1c1.7 0 3.2.6 4.4 1.7l3.3-3.3A11.5 11.5 0 0 0 1.8 6.8l3.8 3C6.5 7.1 9 5.1 12 5.1Z"/></svg>
+              <span style="font-size:15px;font-weight:800">Sign in with Google</span>
+            </button>
+            <div style="margin-top:14px;font-size:12px;line-height:1.6;opacity:.6;max-width:560px">Signing in also tells us your name and email, so we know where to send the link. That's the whole ask.</div>
+          </sc-if>
+
+          <sc-if value="{{ signedIn }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:30px;border:2px solid #0f9d58;padding:18px;max-width:560px;animation:rbIn .25s ease both">
+              <div style="display:flex;align-items:center;gap:14px">
+                <div style="width:42px;height:42px;border-radius:50%;background:#b98d4f;color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800">A</div>
+                <div style="flex:1"><div style="font-size:14px;font-weight:800">amara.okonkwo@gmail.com</div><div style="font-size:12px;opacity:.6;margin-top:2px">Connected · Ribbet folder created in Drive</div></div>
+                <div style="font-size:12px;color:#0f9d58;font-weight:800">✓</div>
+              </div>
+              <div style="margin-top:14px;padding-top:14px;border-top:1px solid #e0dcd4;font-size:12px;line-height:1.6;opacity:.7">Cole can be added as a second owner later — same Drive folder, same Sheet, both of you edit.</div>
+            </div>
+            <button onClick="{{ next }}" style="{{ ctaStyle }}">Continue to the details →</button>
+          </sc-if>
+        </div>
+        </sc-if>
+
+        <!-- STEP 2 · DETAILS -->
+        <sc-if value="{{ isDetails }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:rbIn .25s ease both;padding:38px 54px 44px">
+          <div style="font-family:Fraunces,serif;font-size:34px">The basics</div>
+          <div style="margin-top:8px;font-size:13px;opacity:.7;max-width:600px">This is the only screen that needs you. Fill it in and you can be live in ninety seconds — or keep going and pick your sections and colors.</div>
+
+          <div style="display:flex;gap:14px;margin-top:24px">
+            <label style="flex:1"><span style="{{ labStyle }}">First name</span><input value="{{ n1 }}" onChange="{{ setN1 }}" style="{{ inputStyle }}"></label>
+            <label style="flex:1"><span style="{{ labStyle }}">Second name</span><input value="{{ n2 }}" onChange="{{ setN2 }}" style="{{ inputStyle }}"></label>
+          </div>
+          <div style="display:flex;gap:14px;margin-top:14px">
+            <label style="flex:1"><span style="{{ labStyle }}">Wedding date</span><input value="{{ date }}" onChange="{{ setDate }}" style="{{ inputStyle }}"></label>
+            <label style="flex:1"><span style="{{ labStyle }}">Guests, roughly</span><input value="{{ guestCount }}" onChange="{{ setGuestCount }}" style="{{ inputStyle }}"></label>
+          </div>
+          <label style="display:block;margin-top:14px"><span style="{{ labStyle }}">Venue</span><input value="{{ venue }}" onChange="{{ setVenue }}" style="{{ inputStyle }}"></label>
+
+          <div style="margin-top:26px;padding:20px;border:2px solid #201e1d">
+            <div style="{{ labStyle }}">Your wedding's address</div>
+            <div style="font-size:12.5px;line-height:1.6;opacity:.7;margin-bottom:14px">This is what goes in every text invite. Most couples want their own domain — it reads like a real thing, not a link to somebody's product.</div>
+
+            <div style="display:flex;gap:10px">
+              <sc-for list="{{ domainModes }}" as="d" hint-placeholder-count="2">
+                <button onClick="{{ d.pick }}" style="{{ d.style }}">
+                  <span style="{{ d.dotStyle }}"></span>
+                  <span style="flex:1;text-align:left">
+                    <span style="display:block;font-size:13px;font-weight:800">{{ d.label }}</span>
+                    <span style="display:block;font-size:11.5px;opacity:.62;margin-top:3px;line-height:1.45">{{ d.sub }}</span>
+                  </span>
+                  <span style="font-size:11px;font-weight:800;opacity:.6">{{ d.price }}</span>
+                </button>
+              </sc-for>
+            </div>
+
+            <sc-if value="{{ isOwnDomain }}" hint-placeholder-val="{{ true }}">
+              <div style="margin-top:16px;animation:rbIn .2s ease both">
+                <div style="display:flex;align-items:stretch;border:2px solid #201e1d;background:#fff">
+                  <input value="{{ domainVal }}" onChange="{{ setDomain }}" placeholder="amaraandcole26" style="flex:1;min-width:0;padding:12px;border:0;background:transparent;font-size:15px;font-weight:800;outline:none">
+                  <span style="display:flex;align-items:center;padding:0 12px;font-size:14px;opacity:.55;border-left:1px solid #e0dcd4">.com</span>
+                </div>
+                <div style="{{ domainNoteStyle }}">{{ domainNote }}</div>
+                <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:11px">
+                  <sc-for list="{{ domainIdeas }}" as="s" hint-placeholder-count="3">
+                    <button onClick="{{ s.pick }}" style="{{ s.style }}">{{ s.label }}</button>
+                  </sc-for>
+                </div>
+                <div style="margin-top:13px;padding:13px 15px;background:#faf8f4;border-left:3px solid {{ accent }};font-size:12px;line-height:1.6;opacity:.75">We register it, point it at your app, and set up the certificate. Nothing for you to configure — it's live when your app is. Yours for two years; renew it after that or let it go.</div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ isFreeDomain }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:16px;animation:rbIn .2s ease both">
+                <div style="display:flex;align-items:stretch;border:2px solid #201e1d;background:#fff">
+                  <span style="display:flex;align-items:center;padding:0 2px 0 12px;font-size:14px;opacity:.55">ribbet.app/</span>
+                  <input value="{{ slugVal }}" onChange="{{ setSlug }}" style="flex:1;min-width:0;padding:12px 12px 12px 2px;border:0;background:transparent;font-size:15px;font-weight:800;outline:none">
+                </div>
+                <div style="{{ slugNoteStyle }}">{{ slugNote }}</div>
+                <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:11px">
+                  <sc-for list="{{ slugIdeas }}" as="s" hint-placeholder-count="3">
+                    <button onClick="{{ s.pick }}" style="{{ s.style }}">{{ s.label }}</button>
+                  </sc-for>
+                </div>
+                <div style="margin-top:13px;font-size:12px;line-height:1.6;opacity:.6">Free, live immediately, and you can add your own domain later — the link keeps working either way.</div>
+              </div>
+            </sc-if>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:16px;margin-top:28px;flex-wrap:wrap">
+            <button onClick="{{ finishFast }}" style="{{ ctaFlush }}">Build it now — use your defaults →</button>
+            <button onClick="{{ next }}" style="padding:15px 20px;border:2px solid #201e1d;background:transparent;font-size:13.5px;font-weight:800;cursor:pointer" style-hover="background:#f4f1ec">Customize sections &amp; look</button>
+          </div>
+          <div style="margin-top:12px;font-size:12px;line-height:1.6;opacity:.6;max-width:560px">Defaults are 11 of 12 sections on and the Botanical layout in brass. Everything is editable after it's live — nothing here is locked in.</div>
+        </div>
+        </sc-if>
+
+        <!-- STEP 3 · SECTIONS -->
+        <sc-if value="{{ isSections }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:rbIn .25s ease both;padding:38px 54px 44px">
+          <div style="font-family:Fraunces,serif;font-size:34px">What your guests get</div>
+          <div style="margin-top:8px;font-size:13px;opacity:.7;max-width:620px">Home, RSVP and The Day are always on — they're the app. Everything else is yours to switch off, rename, or reorder. {{ sectionCount }} on right now.</div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:22px">
+            <sc-for list="{{ sections }}" as="s" hint-placeholder-count="10">
+              <button onClick="{{ s.toggle }}" style="{{ s.style }}">
+                <span style="{{ s.boxStyle }}">{{ s.check }}</span>
+                <span style="flex:1;text-align:left">
+                  <span style="display:block;font-size:14px;font-weight:800">{{ s.label }}</span>
+                  <span style="display:block;font-size:11.5px;opacity:.62;margin-top:3px;line-height:1.45">{{ s.sub }}</span>
+                </span>
+                <span style="{{ s.tagStyle }}">{{ s.tag }}</span>
+              </button>
+            </sc-for>
+          </div>
+
+          <div style="margin-top:22px;padding:18px;border:2px solid #e0dcd4;display:flex;gap:16px;align-items:flex-start">
+            <div style="width:26px;height:34px;background:#0f9d58;position:relative;flex:none;border-radius:2px"><div style="position:absolute;left:5px;top:9px;right:5px;bottom:7px;border:1.5px solid #fff"></div><div style="position:absolute;left:5px;top:16px;right:5px;height:1.5px;background:#fff"></div><div style="position:absolute;left:12px;top:9px;width:1.5px;bottom:7px;background:#fff"></div></div>
+            <div style="flex:1"><div style="font-size:13px;font-weight:800">Your Google Sheet builds itself from these</div><div style="font-size:12px;line-height:1.55;opacity:.68;margin-top:4px">{{ sheetTabsLine }}</div></div>
+          </div>
+
+          <button onClick="{{ next }}" style="{{ ctaStyle }}">Pick your look →</button>
+        </div>
+        </sc-if>
+
+        <!-- STEP 4 · DESIGN -->
+        <sc-if value="{{ isDesign }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:rbIn .25s ease both;padding:38px 54px 44px">
+          <div style="font-family:Fraunces,serif;font-size:34px">Your look</div>
+          <div style="margin-top:8px;font-size:13px;opacity:.7;max-width:620px">Three layouts, each one properly designed. Pick the bones, then pull the colors to your palette — the phone on the right is your actual app.</div>
+
+          <div style="display:flex;gap:12px;margin-top:22px">
+            <sc-for list="{{ layouts }}" as="l" hint-placeholder-count="3">
+              <button onClick="{{ l.pick }}" style="{{ l.style }}">
+                <div style="{{ l.swatchStyle }}">
+                  <div style="{{ l.titleStyle }}">Amara<br>&amp; Cole</div>
+                  <div style="{{ l.ruleStyle }}"></div>
+                  <div style="{{ l.metaStyle }}">Oct 10 · Brooklyn</div>
+                </div>
+                <div style="padding:12px 13px 13px;text-align:left">
+                  <div style="font-size:13px;font-weight:800">{{ l.name }}</div>
+                  <div style="font-size:11.5px;line-height:1.45;opacity:.62;margin-top:3px">{{ l.desc }}</div>
+                </div>
+              </button>
+            </sc-for>
+          </div>
+
+          <div style="margin-top:26px;display:flex;gap:26px;align-items:flex-start">
+            <div style="flex:1">
+              <div style="{{ labStyle }}">Your palette</div>
+              <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px">
+                <sc-for list="{{ palettes }}" as="p" hint-placeholder-count="6">
+                  <button onClick="{{ p.pick }}" style="{{ p.style }}">
+                    <span style="display:flex">
+                      <span style="width:19px;height:30px;background:{{ p.c1 }}"></span>
+                      <span style="width:19px;height:30px;background:{{ p.c2 }}"></span>
+                      <span style="width:19px;height:30px;background:{{ p.c3 }}"></span>
+                    </span>
+                    <span style="font-size:11px;font-weight:800">{{ p.name }}</span>
+                  </button>
+                </sc-for>
+              </div>
+              <div style="margin-top:16px;{{ labStyle }}">Or nudge the accent</div>
+              <div style="display:flex;gap:7px;margin-top:4px;flex-wrap:wrap">
+                <sc-for list="{{ accents }}" as="a" hint-placeholder-count="8">
+                  <button onClick="{{ a.pick }}" style="{{ a.style }}"></button>
+                </sc-for>
+              </div>
+              <div style="margin-top:18px;font-size:12px;line-height:1.6;opacity:.62">Everything obeys the palette — buttons, the countdown, the RSVP progress bar, the schedule's "now" marker. One choice, whole app.</div>
+            </div>
+          </div>
+
+          <button onClick="{{ next }}" style="{{ ctaStyle }}">Build my app →</button>
+        </div>
+        </sc-if>
+
+        <!-- STEP 5 · BUILD -->
+        <sc-if value="{{ isBuild }}" hint-placeholder-val="{{ false }}">
+        <div style="animation:rbIn .25s ease both;padding:44px 54px">
+          <div style="font-family:Fraunces,serif;font-size:38px;line-height:1.1;max-width:540px">{{ buildTitle }}</div>
+          <div style="margin-top:14px;font-size:14px;line-height:1.65;opacity:.72;max-width:560px">{{ buildBody }}</div>
+
+          <div style="margin-top:26px;max-width:600px;display:flex;flex-direction:column;gap:2px">
+            <sc-for list="{{ buildSteps }}" as="b" hint-placeholder-count="5">
+              <div style="{{ b.style }}">
+                <span style="{{ b.dotStyle }}">{{ b.mark }}</span>
+                <span style="flex:1;font-size:13.5px;font-weight:700">{{ b.label }}</span>
+                <span style="font-size:11.5px;opacity:.6">{{ b.detail }}</span>
+              </div>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{ built }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:26px;max-width:600px;animation:rbIn .3s ease both">
+            <div style="border:2px solid #201e1d;padding:20px">
+              <div style="{{ labStyle }}">Live now</div>
+              <div style="font-family:Fraunces,serif;font-size:26px;color:{{ accent }};word-break:break-all">{{ slugFinal }}</div>
+              <div style="display:flex;gap:9px;margin-top:16px">
+                <div style="{{ ctaSmallStyle }}">Copy link</div>
+                <div style="padding:11px 15px;border:2px solid #201e1d;font-size:12.5px;font-weight:800">Import guest list →</div>
+              </div>
+            </div>
+            <div style="margin-top:12px;border:2px solid #e0dcd4;padding:18px;display:flex;gap:16px;align-items:flex-start">
+              <div style="width:26px;height:34px;background:#0f9d58;position:relative;flex:none;border-radius:2px"><div style="position:absolute;left:5px;top:9px;right:5px;bottom:7px;border:1.5px solid #fff"></div><div style="position:absolute;left:5px;top:16px;right:5px;height:1.5px;background:#fff"></div><div style="position:absolute;left:12px;top:9px;width:1.5px;bottom:7px;background:#fff"></div></div>
+              <div style="flex:1"><div style="font-size:13px;font-weight:800">"Amara &amp; Cole — Wedding Master" is in your Drive</div><div style="font-size:12px;line-height:1.55;opacity:.68;margin-top:4px">{{ sheetTabsLine }} Share any single tab with a vendor — they never see the others.</div></div>
+            </div>
+          </div>
+          </sc-if>
+
+          <sc-if value="{{ notBuilt }}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{ build }}" style="{{ ctaStyle }}">Create it →</button>
+          </sc-if>
+        </div>
+        </sc-if>
+
+      </div>
+    </div>
+
+    <!-- LIVE PHONE -->
+    <div style="flex:none;display:flex;flex-direction:column;gap:11px">
+      <div style="display:flex;align-items:baseline;gap:9px"><span style="font-family:Fraunces,serif;font-weight:600;font-size:13px;letter-spacing:.1em;text-transform:uppercase">Live preview</span><span style="font-size:12px;opacity:.55">{{ layoutName }} · {{ paletteName }}</span></div>
+      <div style="width:340px;height:736px;border:2px solid #201e1d;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 20px 50px rgba(0,0,0,.18);background:{{ bg }};color:{{ ink }}">
+        <div style="height:40px;flex:none;display:flex;align-items:flex-end;justify-content:space-between;padding:0 20px 5px;font-size:12px"><span>9:41</span><span style="opacity:.7;display:inline-flex"><svg width="52" height="11" viewBox="0 0 60 12" fill="none"><rect x="0" y="6" width="3" height="6" rx="1" fill="currentColor"/><rect x="4.5" y="3.5" width="3" height="8.5" rx="1" fill="currentColor"/><rect x="9" y="1" width="3" height="11" rx="1" fill="currentColor"/><path d="M20.5 5.2c2.6-2.6 7.4-2.6 10 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M22.8 7.9c1.5-1.5 3.9-1.5 5.4 0" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="25.5" cy="10.3" r="1.2" fill="currentColor"/><rect x="36.5" y="1.5" width="19" height="9" rx="2.5" stroke="currentColor" stroke-width="1.1"/><rect x="38.5" y="3.5" width="12" height="5" rx="1" fill="currentColor"/><rect x="57" y="4" width="1.8" height="4" rx="0.9" fill="currentColor"/></svg></span></div>
+        <div style="flex:1;padding:16px 22px 0;overflow:hidden">
+          <div style="font-size:9.5px;letter-spacing:.28em;text-transform:uppercase;color:{{ mut }}">{{ dateShort }} · {{ cityShort }}</div>
+          <div style="margin-top:11px;font-size:38px;line-height:1.03;font-family:{{ serif }}">{{ n1 }}<br><span style="font-style:italic;color:{{ accent }}">and</span> {{ n2 }}</div>
+          <div style="margin-top:11px;display:flex;align-items:center;gap:10px">
+            <div style="width:34px;height:1px;background:{{ accent }}"></div>
+            <div style="font-size:12px;color:{{ mut }}">{{ venueShort }}</div>
+          </div>
+          <div style="margin-top:18px;border:1px solid {{ line }};display:grid;grid-template-columns:1fr 1fr 1fr;text-align:center;border-radius:{{ rad }};overflow:hidden">
+            <div style="padding:12px 6px;border-right:1px solid {{ line }}"><div style="font-size:23px;font-family:{{ serif }}">63</div><div style="font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:{{ mut }};margin-top:3px">Days</div></div>
+            <div style="padding:12px 6px;border-right:1px solid {{ line }}"><div style="font-size:23px;font-family:{{ serif }}">2</div><div style="font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:{{ mut }};margin-top:3px">Seats</div></div>
+            <div style="padding:12px 6px"><div style="font-size:23px;color:{{ accent }};font-family:{{ serif }}">3</div><div style="font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:{{ mut }};margin-top:3px">To do</div></div>
+          </div>
+          <div style="margin-top:18px;font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:{{ mut }}">Waiting on you</div>
+          <div style="margin-top:9px;display:flex;flex-direction:column;gap:7px">
+            <div style="display:flex;align-items:center;gap:11px;padding:12px 13px;background:{{ panel }};border:1px solid {{ line }};border-radius:{{ rad }}"><span style="width:21px;height:21px;flex:none;border:1px solid {{ accent }};border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9.5px;color:{{ accent }}">1</span><span style="flex:1;font-size:12.5px;font-weight:700">Reply to your invitation</span></div>
+            <div style="display:flex;align-items:center;gap:11px;padding:12px 13px;background:{{ panel }};border:1px solid {{ line }};border-radius:{{ rad }}"><span style="width:21px;height:21px;flex:none;border:1px solid {{ accent }};border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9.5px;color:{{ accent }}">2</span><span style="flex:1;font-size:12.5px;font-weight:700">Choose your dinner</span></div>
+          </div>
+          <div style="margin-top:16px;padding:14px 15px;background:{{ accent }};color:{{ accInk }};font-weight:800;font-size:13px;border-radius:{{ rad }}">Reply now →</div>
+        </div>
+        <div style="flex:none;border-top:1px solid {{ line }};display:grid;grid-template-columns:repeat(5,1fr);text-align:center;background:{{ bg }};padding:9px 0 7px">
+          <sc-for list="{{ previewTabs }}" as="p" hint-placeholder-count="5">
+            <div style="{{ p.style }}"><div style="font-size:8px;letter-spacing:.12em;text-transform:uppercase;font-weight:800">{{ p.label }}</div></div>
+          </sc-for>
+        </div>
+        <div style="flex:none;height:18px;display:flex;align-items:center;justify-content:center;background:{{ bg }}"><div style="width:110px;height:4px;background:{{ ink }};opacity:.5;border-radius:2px"></div></div>
+      </div>
+      <div style="width:340px;font-size:11.5px;line-height:1.6;opacity:.6">Updates as you type and pick — this is the app, not a mockup of it.</div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1400,&quot;height&quot;:1000}}">
+class Component extends DCLogic {
+  layoutDefs = {
+    Botanical: {name:'Botanical', desc:'Deep green, brass rules, editorial serif. Best for evening and outdoors.',
+      bg:'#243528', panel:'#2d4234', line:'#3d5142', ink:'#e9e2d4', mut:'#9aa793', serif:'Fraunces,serif', rad:'0px'},
+    Classic: {name:'Classic', desc:'Cream, hairlines, engraved-invitation restraint. Formal without being stiff.',
+      bg:'#f6f3ee', panel:'#ffffff', line:'#e0d8c8', ink:'#2a2622', mut:'#8a8378', serif:"'Cormorant Garamond',Georgia,serif", rad:'0px'},
+    Romantic: {name:'Romantic', desc:'Soft cards, rounded corners, warm light. Reads friendly on a phone.',
+      bg:'#fdf7f4', panel:'#ffffff', line:'#f0dcd2', ink:'#4a3a34', mut:'#a8938a', serif:"'Libre Caslon Text',Georgia,serif", rad:'14px'}
+  };
+  paletteDefs = [
+    {name:'Brass', c1:'#b98d4f', c2:'#e9e2d4', c3:'#3d5142'},
+    {name:'Terracotta', c1:'#c26d5a', c2:'#f3d9cf', c3:'#8a5346'},
+    {name:'Sage', c1:'#7d9a6f', c2:'#e4ebdd', c3:'#4c6244'},
+    {name:'Ink', c1:'#2f4a7c', c2:'#dfe6f2', c3:'#1b2c4d'},
+    {name:'Plum', c1:'#8d6fb9', c2:'#e8dff5', c3:'#5b4479'},
+    {name:'Rust', c1:'#b4552f', c2:'#f2dcd0', c3:'#7a3819'}
+  ];
+  sectionDefs = [
+    ['home','Home','Countdown, your note, what they still owe you',1],
+    ['rsvp','RSVP','Household reply, meals, dietary, plus-ones',1],
+    ['day','The Day','Live schedule and their table',1],
+    ['photos','Photos','Guest uploads → your private Drive vault',0],
+    ['gifts','Gifts','Registry and fund; they pledge, pay by Venmo/Zelle',0],
+    ['travel','Travel & stay','Hotel blocks, shuttle times, map',0],
+    ['menu','Menu','Dinner and bar, with their pick highlighted',0],
+    ['guestbook','Guestbook','Notes wall; you can remove any',0],
+    ['songs','Songs','One request each → your DJ tab',0],
+    ['around','Around town','Your list of local spots, written by you',0],
+    ['party','Wedding party','Who\u2019s who, with photos',0],
+    ['faq','FAQ','Dress code, kids, parking',0]
+  ];
+
+  state = {
+    step:1, signedIn:false, built:false,
+    n1:'Amara', n2:'Cole', date:'Saturday, October 10, 2026',
+    venue:'The Osprey Rooftop, Brooklyn', guestCount:'86', slug:null,
+    domainMode:'own', domain:null,
+    layout:'Botanical', palette:'Brass', accent:null,
+    on:{photos:true, gifts:true, travel:true, menu:true, guestbook:true, songs:true, around:true, party:false, faq:true}
+  };
+
+  clean(s){ return String(s).toLowerCase().replace(/[^a-z0-9-]+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,''); }
+  autoSlug(){ return this.clean(`${this.state.n1}and${this.state.n2}`) || 'our-wedding'; }
+  slugOf(){ return this.state.slug === null ? this.autoSlug() : (this.clean(this.state.slug) || 'our-wedding'); }
+
+  renderVals(){
+    const S = this.state;
+    const L = this.layoutDefs[S.layout];
+    const pal = this.paletteDefs.find(p => p.name === S.palette) || this.paletteDefs[0];
+    const accent = S.accent ?? pal.c1;
+    const lum = parseInt(accent.slice(1,3),16)*0.299 + parseInt(accent.slice(3,5),16)*0.587 + parseInt(accent.slice(5,7),16)*0.114;
+    const accInk = lum < 150 ? '#ffffff' : '#243528';
+
+    const stepDefs = [
+      [1,'Google','Required'],
+      [2,'Details','Names, date, address'],
+      [3,'Sections','What guests get'],
+      [4,'Design','Layout and palette'],
+      [5,'Build','App + Sheet']
+    ];
+    const reachable = n => n === 1 || S.signedIn;
+    const steps = stepDefs.map(([n,label,sub]) => ({
+      n: S.step > n ? '✓' : String(n), label, sub,
+      go: () => reachable(n) && this.setState({step:n}),
+      style: `flex:1;display:flex;align-items:center;gap:11px;padding:14px 15px;border:0;border-right:1px solid #e0dcd4;background:${S.step===n?'#201e1d':'transparent'};color:${S.step===n?'#fff':'#201e1d'};cursor:${reachable(n)?'pointer':'default'};opacity:${reachable(n)?1:.4}`,
+      numStyle: `width:24px;height:24px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;border:2px solid ${S.step===n?'#fff':(S.step>n?accent:'#201e1d')};background:${S.step>n?accent:'transparent'};color:${S.step>n?accInk:'inherit'}`
+    }));
+
+    const on = S.on;
+    const sections = this.sectionDefs.map(([k,label,sub,locked]) => {
+      const active = locked ? true : !!on[k];
+      return { label, sub, check: active ? '✓' : '',
+        tag: locked ? 'Always on' : '',
+        tagStyle: locked ? 'flex:none;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.45' : 'display:none',
+        toggle: () => { if (!locked) this.setState(st => ({on:{...st.on,[k]:!st.on[k]}})); },
+        boxStyle: `width:20px;height:20px;flex:none;border:2px solid ${active?accent:'#c9c4bb'};background:${active?accent:'transparent'};color:${accInk};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800`,
+        style: `display:flex;align-items:flex-start;gap:12px;padding:14px 15px;border:2px solid ${active?'#201e1d':'#e0dcd4'};background:transparent;cursor:${locked?'default':'pointer'};opacity:${active?1:.55};color:#201e1d` };
+    });
+    const activeCount = this.sectionDefs.filter(([k,,,l]) => l || on[k]).length;
+
+    const tabsFor = [];
+    tabsFor.push('Guests & RSVP');
+    if (on.menu || true) tabsFor.push('Caterer');
+    if (on.songs) tabsFor.push('DJ list');
+    if (on.gifts) tabsFor.push('Gifts & thank-yous');
+    if (on.around) tabsFor.push('Things to do');
+
+    const layouts = Object.values(this.layoutDefs).map(l => {
+      const sel = S.layout === l.name;
+      return { name:l.name, desc:l.desc,
+        pick: () => this.setState({layout:l.name}),
+        style: `flex:1;border:2px solid ${sel?'#201e1d':'#e0dcd4'};background:transparent;padding:0;cursor:pointer;color:#201e1d;box-shadow:${sel?'0 8px 22px rgba(0,0,0,.12)':'none'}`,
+        swatchStyle: `background:${l.bg};color:${l.ink};padding:20px 16px;text-align:left;font-family:${l.serif}`,
+        titleStyle: `font-size:22px;line-height:1.05`,
+        ruleStyle: `width:32px;height:1px;background:${accent};margin:9px 0`,
+        metaStyle: `font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:${l.mut};font-family:Karla,sans-serif` };
+    });
+
+    const palettes = this.paletteDefs.map(p => ({
+      name:p.name, c1:p.c1, c2:p.c2, c3:p.c3,
+      pick: () => this.setState({palette:p.name, accent:null}),
+      style: `display:flex;align-items:center;gap:9px;padding:6px 10px 6px 6px;border:2px solid ${S.palette===p.name && !S.accent ? '#201e1d':'#e0dcd4'};background:transparent;cursor:pointer;color:#201e1d`
+    }));
+    const accents = ['#b98d4f','#c26d5a','#7d9a6f','#2f4a7c','#8d6fb9','#b4552f','#3d5142','#8a5346'].map(c => ({
+      pick: () => this.setState({accent:c}),
+      style: `width:30px;height:30px;padding:0;background:${c};border:${accent===c?'3px solid #201e1d':'2px solid rgba(32,30,29,.2)'};cursor:pointer`
+    }));
+
+    const slug = this.slugOf();
+    const taken = ['wedding','love','us','thebigday'];
+    const short = slug.length < 4, isTaken = taken.includes(slug);
+    const ok = !short && !isTaken;
+    const yr = String(S.date).match(/(20\d\d)/);
+    const a = this.clean(S.n1) || 'you', b = this.clean(S.n2) || 'them';
+    const ideas = [`${a}and${b}`, `${a}${b}${yr ? yr[1].slice(2) : '26'}`, `the${b}wedding`].map(v => ({
+      label:v, pick: () => this.setState({slug:v}),
+      style: `padding:8px 11px;border:2px solid ${slug===v?accent:'#e0dcd4'};background:transparent;color:${slug===v?accent:'#201e1d'};font-size:11.5px;font-weight:800;cursor:pointer`
+    }));
+
+    const own = S.domainMode === 'own';
+    const autoDomain = `${a}and${b}${yr ? yr[1].slice(2) : '26'}`.replace(/-/g,'');
+    const domainRaw = S.domain === null ? autoDomain : S.domain;
+    const domain = this.clean(domainRaw).replace(/-/g,'') || 'ourwedding';
+    const domainTaken = ['wedding','love','us','ourwedding'].includes(domain);
+    const domainShort = domain.length < 5;
+    const domainOk = !domainTaken && !domainShort;
+
+    const domainModes = [
+      ['own','Your own domain', `${domain}.com — reads like it's yours, because it is`, 'included'],
+      ['free','A Ribbet address', 'ribbet.app/yourname — free, live in seconds', 'free']
+    ].map(([k,label,sub,price]) => ({
+      label, sub, price,
+      pick: () => this.setState({domainMode:k}),
+      dotStyle: `width:16px;height:16px;flex:none;border-radius:50%;border:2px solid ${S.domainMode===k?accent:'#c9c4bb'};background:${S.domainMode===k?accent:'transparent'};margin-top:2px;box-shadow:${S.domainMode===k?'inset 0 0 0 3px #fff':'none'}`,
+      style: `flex:1;display:flex;align-items:flex-start;gap:11px;padding:14px 15px;border:2px solid ${S.domainMode===k?'#201e1d':'#e0dcd4'};background:transparent;cursor:pointer;color:#201e1d;opacity:${S.domainMode===k?1:.6}`
+    }));
+
+    const domainIdeas = [`${a}and${b}${yr ? yr[1].slice(2) : '26'}`, `${a}${b}wedding`, `the${b}s`].map(v => {
+      const val = v.replace(/-/g,'');
+      return { label: `${val}.com`, pick: () => this.setState({domain:val}),
+        style: `padding:8px 11px;border:2px solid ${domain===val?accent:'#e0dcd4'};background:transparent;color:${domain===val?accent:'#201e1d'};font-size:11.5px;font-weight:800;cursor:pointer` };
+    });
+
+    const finalAddress = own ? `${domain}.com` : `ribbet.app/${slug}`;
+
+    const buildStepDefs = [
+      [own ? 'Domain registered' : 'Address reserved', own ? `${domain}.com · certificate issued` : `ribbet.app/${slug}`],
+      ['Drive folder made', '"Amara & Cole — Photos"'],
+      ['Sheet created', `${tabsFor.length} tabs`],
+      ['Sections switched on', `${activeCount} of 12`],
+      ['Palette applied', `${S.palette}${S.accent ? ' + custom accent' : ''}`]
+    ];
+    const buildSteps = buildStepDefs.map(([label, detail], i) => ({
+      label, detail,
+      mark: S.built ? '✓' : (i === 0 ? '•' : ''),
+      dotStyle: `width:20px;height:20px;flex:none;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;border:2px solid ${S.built?accent:'#c9c4bb'};background:${S.built?accent:'transparent'};color:${S.built?accInk:'#c9c4bb'}`,
+      style: `display:flex;align-items:center;gap:13px;padding:13px 15px;border:2px solid ${S.built?'#201e1d':'#e0dcd4'};opacity:${S.built?1:.55};transition:opacity .3s ease`
+    }));
+
+    const previewTabs = ['Home','RSVP','Day','Photos','More'].map((label,i) => ({
+      label, style: `padding:2px 0;color:${i===0?accent:L.mut};opacity:${i===0?1:.7}`
+    }));
+
+    const cta = `margin-top:28px;padding:15px 22px;border:2px solid ${accent};background:${accent};color:${accInk};font-size:14px;font-weight:800;cursor:pointer`;
+    const lab = 'display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;opacity:.55;margin-bottom:7px';
+    const input = 'width:100%;box-sizing:border-box;padding:12px;border:2px solid #201e1d;background:#fff;font-size:14px;border-radius:0;outline:none';
+
+    return {
+      steps, isGoogle:S.step===1, isDetails:S.step===2, isSections:S.step===3, isDesign:S.step===4, isBuild:S.step===5,
+      signedIn:S.signedIn, notSignedIn:!S.signedIn,
+      signIn: () => this.setState({signedIn:true}),
+      next: () => this.setState({step: Math.min(5, S.step+1)}),
+      finishFast: () => this.setState({step:5}),
+      ctaFlush: `padding:15px 22px;border:2px solid ${accent};background:${accent};color:${accInk};font-size:14px;font-weight:800;cursor:pointer`,
+      ctaStyle: cta, ctaSmallStyle: `padding:11px 15px;background:${accent};color:${accInk};font-size:12.5px;font-weight:800`,
+      labStyle: lab, inputStyle: input,
+      n1:S.n1, n2:S.n2, date:S.date, venue:S.venue, guestCount:S.guestCount,
+      setN1:e=>this.setState({n1:e.target.value}), setN2:e=>this.setState({n2:e.target.value}),
+      setDate:e=>this.setState({date:e.target.value}), setVenue:e=>this.setState({venue:e.target.value}),
+      setGuestCount:e=>this.setState({guestCount:e.target.value}),
+      slugVal: S.slug === null ? this.autoSlug() : S.slug,
+      setSlug:e=>this.setState({slug:e.target.value}),
+      slugIdeas: ideas, slugFinal: finalAddress,
+      domainModes, isOwnDomain: own, isFreeDomain: !own,
+      domainVal: domainRaw, setDomain: e => this.setState({domain:e.target.value}),
+      domainIdeas,
+      domainNote: domainShort ? 'A bit longer — at least 5 characters.'
+        : domainTaken ? `${domain}.com is taken. Add the year, or try "the${b}s".`
+        : `${domain}.com is available. We'll register it for you.`,
+      domainNoteStyle: `margin-top:9px;font-size:12.5px;font-weight:${domainOk?400:800};color:${domainOk?'#201e1d':'#b8240e'};opacity:${domainOk?.65:1}`,
+      slugNote: short ? 'A little longer — at least 4 characters.' : isTaken ? `ribbet.app/${slug} is taken. Try adding the year.` : `ribbet.app/${slug} is free.`,
+      slugNoteStyle: `margin-top:9px;font-size:12.5px;font-weight:${ok?400:800};color:${ok?'#201e1d':'#b8240e'};opacity:${ok?.65:1}`,
+      sections, sectionCount: `${activeCount} of 12`,
+      sheetTabsLine: `Tabs right now: ${tabsFor.join(' · ')}.`,
+      layouts, palettes, accents,
+      layoutName:S.layout, paletteName: S.accent ? 'custom accent' : S.palette,
+      accent, accInk, bg:L.bg, panel:L.panel, line:L.line, ink:L.ink, mut:L.mut, serif:L.serif, rad:L.rad,
+      previewTabs,
+      dateShort: String(S.date).replace(/^[A-Za-z]+,\s*/,''),
+      cityShort: String(S.venue).split(',').slice(-1)[0].trim() || 'Brooklyn',
+      venueShort: String(S.venue).split(',')[0],
+      buildSteps, built:S.built, notBuilt:!S.built,
+      build: () => this.setState({built:true}),
+      buildTitle: S.built ? 'It\u2019s live.' : 'Ready when you are.',
+      buildBody: S.built
+        ? 'Your app is up and your Sheet is in Drive. Next: bring in the guest list, and Ribbet texts each household their own link.'
+        : 'One button. Ribbet writes the app, creates the Drive folder, and builds your spreadsheet — about fifteen seconds.'
+    };
+  }
+}
+</script>
+</body>
+</html>

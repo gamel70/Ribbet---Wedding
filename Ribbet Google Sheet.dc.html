@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Karla:wght@400;700;800&display=swap" rel="stylesheet">
+<meta name="design_doc_mode" content="canvas">
+<style>
+body{margin:0;background:#e6e4e2}
+*{-webkit-font-smoothing:antialiased}
+.gs::-webkit-scrollbar{width:0;height:0}
+.gs{scrollbar-width:none}
+button{font-family:inherit}
+a{color:#1a73e8}a:hover{color:#0b57d0}
+@keyframes gsIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:#e6e4e2;font-family:Karla,sans-serif;color:#201e1d;padding:44px 44px 80px">
+  <div style="display:flex;align-items:baseline;gap:16px;border-bottom:2px solid #201e1d;padding-bottom:14px">
+    <span style="font-family:Fraunces,serif;font-weight:600;font-size:26px;letter-spacing:-0.02em">Ribbet</span>
+    <span style="font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.6">The couple's Google Sheet — one workbook, five handoffs</span>
+    <span style="margin-left:auto;font-size:11px;letter-spacing:.14em;text-transform:uppercase;opacity:.5">Phase 3 preview · Amara &amp; Cole</span>
+  </div>
+  <p style="max-width:850px;font-size:14px;line-height:1.6;opacity:.72;margin:14px 0 28px;text-wrap:pretty">Every guest answer writes straight into the couple's own Google Sheet — live, in their Drive, theirs forever even if they stop using Ribbet. Each tab is built to be handed to one person: the caterer, the DJ, the couple, the thank-you pile, and the local guide they publish back to guests. Click the tabs at the bottom.</p>
+
+  <div style="display:flex;gap:34px;align-items:flex-start;flex-wrap:wrap">
+
+    <div style="flex:none;width:1180px;height:824px;background:#fff;border:2px solid #201e1d;box-shadow:0 24px 60px rgba(0,0,0,.18);display:flex;flex-direction:column;overflow:hidden">
+
+      <div style="flex:none;padding:12px 18px 10px;border-bottom:1px solid #dadce0;display:flex;align-items:center;gap:12px">
+        <div style="width:26px;height:34px;background:#0f9d58;position:relative;flex:none;border-radius:2px">
+          <div style="position:absolute;left:5px;top:9px;right:5px;bottom:7px;border:1.5px solid #fff"></div>
+          <div style="position:absolute;left:5px;top:16px;right:5px;height:1.5px;background:#fff"></div>
+          <div style="position:absolute;left:12px;top:9px;width:1.5px;bottom:7px;background:#fff"></div>
+        </div>
+        <div>
+          <div style="font-size:16px;color:#202124">Amara &amp; Cole — Wedding Master</div>
+          <div style="font-size:11px;color:#5f6368;margin-top:3px">File · Edit · View · Insert · Format · Data · Extensions &nbsp;·&nbsp; <span style="color:#1a73e8">Ribbet sync on · last write 40 seconds ago</span></div>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+          <div style="display:flex">
+            <div style="width:27px;height:27px;border-radius:50%;background:#b98d4f;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;border:2px solid #fff">A</div>
+            <div style="width:27px;height:27px;border-radius:50%;background:#3d5142;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;border:2px solid #fff;margin-left:-8px">C</div>
+            <div style="width:27px;height:27px;border-radius:50%;background:#5f6368;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;border:2px solid #fff;margin-left:-8px">DJ</div>
+          </div>
+          <div style="padding:8px 15px;background:#1a73e8;color:#fff;font-size:13px;font-weight:700;border-radius:4px">Share</div>
+        </div>
+      </div>
+
+      <div style="flex:none;display:flex;align-items:center;gap:14px;padding:9px 18px;border-bottom:1px solid #dadce0;background:#f8f9fa;font-size:13px;color:#5f6368">
+        <span style="font-weight:700;color:#202124">{{ cellRef }}</span>
+        <span style="width:1px;height:16px;background:#dadce0"></span>
+        <span style="flex:1;font-family:'Roboto Mono',monospace;font-size:12px;color:#202124">{{ formula }}</span>
+        <span style="font-size:11px;padding:4px 9px;background:#e8f0fe;color:#1a73e8;border-radius:3px;font-weight:700">Auto-filled by Ribbet — don't edit</span>
+      </div>
+
+      <div style="flex:none;display:flex;align-items:flex-start;gap:16px;padding:14px 18px;border-bottom:1px solid #dadce0;background:{{ bannerBg }}">
+        <div style="width:34px;height:34px;flex:none;border-radius:50%;background:{{ bannerAcc }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800">{{ bannerIcon }}</div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:800;color:#202124">{{ bannerTitle }}</div>
+          <div style="font-size:12px;line-height:1.5;color:#5f6368;margin-top:3px;max-width:820px">{{ bannerBody }}</div>
+        </div>
+        <div style="flex:none;padding:9px 14px;border:1px solid {{ bannerAcc }};color:{{ bannerAcc }};font-size:12px;font-weight:800;border-radius:4px">{{ bannerCta }}</div>
+      </div>
+
+      <div class="gs" style="flex:1;min-height:0;overflow:auto">
+        <div style="display:grid;grid-template-columns:{{ cols }};min-width:100%;animation:gsIn .22s ease both">
+          <sc-for list="{{ cells }}" as="c" hint-placeholder-count="120">
+            <div style="{{ c.style }}">{{ c.v }}</div>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="flex:none;display:flex;align-items:stretch;border-top:1px solid #dadce0;background:#f8f9fa">
+        <div style="display:flex;align-items:center;padding:0 12px;color:#5f6368;font-size:18px">+</div>
+        <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5">
+          <button onClick="{{ t.pick }}" style="{{ t.style }}">{{ t.label }}</button>
+        </sc-for>
+        <div style="margin-left:auto;display:flex;align-items:center;padding:0 16px;font-size:11px;color:#5f6368">{{ rowNote }}</div>
+      </div>
+    </div>
+
+    <div style="width:330px;padding-top:6px">
+      <div style="border-top:2px solid #201e1d;padding-top:14px;font-size:11px;letter-spacing:.18em;text-transform:uppercase;opacity:.55">Why a real Sheet</div>
+      <div style="padding:15px 0;border-bottom:1px solid rgba(32,30,29,.2)">
+        <div style="font-family:Fraunces,serif;font-weight:600;font-size:14px">Vendors don't want a login</div>
+        <div style="font-size:13px;line-height:1.55;opacity:.68;margin-top:5px;text-wrap:pretty">The caterer gets view access to one tab. The DJ gets another. Nobody installs anything, nobody sees the gift column.</div>
+      </div>
+      <div style="padding:15px 0;border-bottom:1px solid rgba(32,30,29,.2)">
+        <div style="font-family:Fraunces,serif;font-weight:600;font-size:14px">It's theirs, not ours</div>
+        <div style="font-size:13px;line-height:1.55;opacity:.68;margin-top:5px;text-wrap:pretty">The workbook lives in the couple's Drive next to the photo vault. Ribbet writes to it; deleting the app doesn't delete the data.</div>
+      </div>
+      <div style="padding:15px 0;border-bottom:1px solid rgba(32,30,29,.2)">
+        <div style="font-family:Fraunces,serif;font-weight:600;font-size:14px">Thank-yous survive the honeymoon</div>
+        <div style="font-size:13px;line-height:1.55;opacity:.68;margin-top:5px;text-wrap:pretty">Gift, amount, address and a Sent checkbox in one row — tick in the app or in the Sheet, either way it syncs both directions.</div>
+      </div>
+      <div style="padding:15px 0">
+        <div style="font-family:Fraunces,serif;font-weight:600;font-size:14px">The guide runs the other way</div>
+        <div style="font-size:13px;line-height:1.55;opacity:.68;margin-top:5px;text-wrap:pretty">Things to do is the one tab the couple <em>writes</em>. Type a spot, it appears in every guest's app under More.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1620,&quot;height&quot;:940},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;Comfortable&quot;,&quot;options&quot;:[&quot;Compact&quot;,&quot;Comfortable&quot;,&quot;Roomy&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Sheet&quot;}}">
+class Component extends DCLogic {
+  state = { tab: 'Guests & RSVP' };
+
+  sheets = {
+    'Guests & RSVP': {
+      icon:'✓', acc:'#1a73e8', bg:'#e8f0fe',
+      title:'Row 1–86 write themselves — invites out, replies in',
+      body:'Every household you texted from Ribbet appears here with its send status and reply. Sort by Reply = blank to see exactly who still owes you an answer, then hit nudge in the app.',
+      cta:'Filter: no reply (18)',
+      ref:'D14', formula:'=RIBBET.RSVP("marchetti-lee")   →   "Coming · 2"',
+      cols:'46px 1.6fr 1.2fr 0.9fr 0.8fr 0.9fr 1fr 0.8fr 1.4fr',
+      head:['','Household','Guests','Invite sent','Opened','Reply','Attending','Kids','Note to couple'],
+      rows:[
+        ['Marchetti-Lee','Rosa Marchetti, Devon Lee','Aug 2 · text','Aug 2','Coming','2','—','Wouldn\u2019t miss it. Save me a dance.'],
+        ['Bhatt','Priya Bhatt','Aug 2 · text','Aug 2','Coming','1','—',''],
+        ['Aldous','Kath & Greg Aldous','Aug 2 · text','Aug 3','Coming','2','—','Bringing the trifle whether you like it or not.'],
+        ['O\u2019Neill','Sam O\u2019Neill +1','Aug 2 · text','Aug 2','Coming','2','—',''],
+        ['Ward','Tom & Wren Ward','Aug 2 · text','Aug 4','Declined','0','—','Devastated — we\u2019re in Chile that week.'],
+        ['Noor','Hana Noor +1','Aug 2 · text','Aug 5','Coming','2','—',''],
+        ['Fell','Dan Fell +1','Aug 2 · text','Aug 2','','','',''],
+        ['Voss','Elle Voss +1','Aug 2 · text','Aug 2','Coming','2','1','Speech is written. Be afraid.'],
+        ['Reyes','Milo Reyes','Aug 2 · text','—','','','',''],
+        ['Moss','Lena Moss','Aug 2 · text','Aug 6','Coming','1','—',''],
+        ['Okafor','Nina Okafor','Aug 2 · text','Aug 3','Coming','1','—','Can I bring my dog. Serious question.'],
+        ['Trelawny','Ben Trelawny +1','Aug 2 · text','Aug 2','','','',''],
+        ['Sandoval','Ana & Luis Sandoval','Aug 2 · text','Aug 3','Coming','2','2',''],
+        ['Whitfield','Jo Whitfield','Aug 2 · text','Aug 7','Coming','1','—','Flying in Friday night — count me for the shuttle.'],
+        ['Park','Ji-woo Park +1','Aug 2 · text','Aug 2','','','','']
+      ],
+      note:'86 households · 63 coming · 18 no reply'
+    },
+
+    'Caterer': {
+      icon:'▦', acc:'#0f9d58', bg:'#e6f4ea',
+      title:'Share this tab with The Osprey — view only',
+      body:'Counts at the top recalculate on every RSVP, so the number you send the kitchen on Friday is the number that walks in. No gift data, no phone numbers, nothing they don\u2019t need.',
+      cta:'Copy share link',
+      ref:'B2', formula:'=COUNTIF(Guests!G:G,"Striploin")   →   28',
+      cols:'46px 1.5fr 1.2fr 1.1fr 1.4fr 0.7fr 1.5fr',
+      head:['','Guest','Table','Main','Dietary','Kid','Kitchen note'],
+      rows:[
+        ['— TOTALS —','','28 steak · 19 fish · 16 veg','9 flagged','3','Print by Oct 3'],
+        ['Rosa Marchetti','7','Striploin','Gluten-free','—','No croutons, no soy'],
+        ['Devon Lee','7','Black bass','—','—',''],
+        ['Priya Bhatt','7','Agnolotti','Vegetarian','—',''],
+        ['Kath Aldous','2','Black bass','No shellfish','—','Severe — separate prep'],
+        ['Greg Aldous','2','Striploin','—','—','Medium rare'],
+        ['Sam O\u2019Neill','7','Striploin','—','—',''],
+        ['Devi Rao (Sam +1)','7','Agnolotti','Vegan','—','No dairy in the pasta'],
+        ['Hana Noor','3','Agnolotti','Vegan','—',''],
+        ['Elle Voss','1','Striploin','Dairy-free','—',''],
+        ['Iris Voss','1','Kids plate','—','Yes','Age 6 — pasta, butter, nothing green'],
+        ['Lena Moss','1','Black bass','Nut allergy','—','Epi-pen at table 1'],
+        ['Nina Okafor','1','Striploin','—','—',''],
+        ['Ana Sandoval','5','Agnolotti','Vegetarian','—',''],
+        ['Luis Sandoval','5','Striploin','—','—','']
+      ],
+      note:'63 covers · 9 dietary flags · 3 kids plates'
+    },
+
+    'DJ list': {
+      icon:'♪', acc:'#7a4a86', bg:'#f3e8f6',
+      title:'Share with Marcus (DJ) — he sorts by votes and builds the set',
+      body:'One request per guest, collected in the RSVP. Duplicates roll up into a vote count so the floor-fillers rise to the top on their own. Do-not-play is the couple\u2019s column.',
+      cta:'Copy share link',
+      ref:'D2', formula:'=SORT(Requests!A:D, 4, FALSE)',
+      cols:'46px 1.5fr 1.4fr 0.7fr 1.1fr 1.4fr',
+      head:['','Song','Artist','Votes','Slot','Requested by'],
+      rows:[
+        ['Golden','Solange','7','Dinner','Rosa + 6 others'],
+        ['September','Earth, Wind & Fire','6','Peak','Kath, Greg, Sam…'],
+        ['Passionfruit','Drake','5','Late','Priya, Hana…'],
+        ['Dancing On My Own','Robyn','5','Peak','Elle + 4'],
+        ['Kiss','Prince','4','Peak','Marcus, Nina…'],
+        ['Hey Ya!','OutKast','4','Peak','Dan + 3'],
+        ['Ribs','Lorde','3','Late','Milo, Lena, Jo'],
+        ['Juicy','The Notorious B.I.G.','3','Late','Ben + 2'],
+        ['La Vie En Rose','Louis Armstrong','2','Cocktails','Ana, Luis'],
+        ['Feels Like Summer','Childish Gambino','2','Dinner','Ji-woo, Hana'],
+        ['— FIRST DANCE —','Amara & Cole\u2019s pick: "Golden" (Jill Scott)','','9:35','locked'],
+        ['— DO NOT PLAY —','Anything by Chainsmokers; the Cha Cha Slide','','','Cole was very clear']
+      ],
+      note:'31 requests · 24 unique tracks'
+    },
+
+    'Gifts & thank-yous': {
+      icon:'✉', acc:'#b98d4f', bg:'#fbf1e2',
+      title:'The after-the-wedding tab — who gave what, and who\u2019s been thanked',
+      body:'Pledges land here the moment a guest taps in the app; you tick Paid when it arrives and Sent when the card goes out. Ticking here or in the app updates both. Addresses come from the RSVP so you\u2019re not chasing them in December.',
+      cta:'12 cards still to send',
+      ref:'H5', formula:'=IF(Sent="TRUE","✓ "&TEXT(SentDate,"mmm d"),"pending")',
+      cols:'46px 1.4fr 1.5fr 0.8fr 0.7fr 1.6fr 0.9fr 1fr',
+      head:['','From','Gift','Amount','Paid','Address','Card sent','Sent on'],
+      rows:[
+        ['Rosa Marchetti','Le Creuset dutch oven','$420','✓','118 Bergen St, Brooklyn NY 11217','✓','Oct 24'],
+        ['Sam O\u2019Neill','Record player','$340','✓','4 Vestry St, New York NY 10013','✓','Oct 24'],
+        ['Elle Voss','Honeymoon — Kyoto','$300','✓','29 Prospect Pl, Brooklyn NY 11217','✓','Oct 26'],
+        ['Priya Bhatt','Ceramics class for two','$180','✓','77 Water St, Brooklyn NY 11201','','—'],
+        ['Kath & Greg Aldous','Honeymoon — Kyoto','$500','✓','12 Larkspur Ln, Rye NY 10580','','—'],
+        ['Tom & Wren Ward','Honeymoon — Kyoto','$150','✓','Casilla 220, Santiago CL','','—'],
+        ['Nina Okafor','Honeymoon — Kyoto','$100','✓','311 W 43rd St, New York NY 10036','','—'],
+        ['Lena Moss','Espresso grinder','$220','pending','9 Sterling Pl, Brooklyn NY 11217','','—'],
+        ['Hana Noor','Honeymoon — Kyoto','$125','✓','60 Guernsey St, Brooklyn NY 11222','','—'],
+        ['Ana & Luis Sandoval','Linen set','$260','✓','1140 Ocean Ave, Brooklyn NY 11230','','—'],
+        ['Jo Whitfield','Honeymoon — Kyoto','$75','✓','44 Dean St, Brooklyn NY 11201','','—'],
+        ['Ji-woo Park','Knife roll','$310','pending','2 Bond St, New York NY 10012','','—'],
+        ['— TOTAL —','24 gifts logged','$6,400','','','3 sent · 12 to go','']
+      ],
+      note:'$6,400 pledged · $5,870 received · 3 of 15 cards sent'
+    },
+
+    'Things to do': {
+      icon:'★', acc:'#c26d5a', bg:'#fdeee9',
+      title:'The one tab you write — it publishes into every guest\u2019s app',
+      body:'Type a spot here and it appears under More → Around town within a minute, grouped by the category you pick. Good for the out-of-towners who arrive Thursday and text you asking where to eat.',
+      cta:'Publish to guest app',
+      ref:'C4', formula:'→ pushes to More ▸ Around town (live)',
+      cols:'46px 1.5fr 1fr 1.1fr 0.9fr 2fr',
+      head:['','Place','Category','Neighborhood','Walk','Why we love it'],
+      rows:[
+        ['Grimaldi\u2019s','Eat','DUMBO','6 min','The pizza line is worth it. Go before 6.'],
+        ['Time Out Market','Eat','DUMBO','4 min','Rooftop, 20 stalls, everyone finds something.'],
+        ['Brooklyn Bridge Park','Walk','DUMBO','3 min','Do the Pier 1 loop at sunset — best skyline view in the city.'],
+        ['Jane\u2019s Carousel','Do','DUMBO','5 min','Yes, ride it. You\u2019re on holiday.'],
+        ['Archestratus Books','Do','Greenpoint','20 min cab','Cookbook shop with a café in the back. Amara\u2019s favorite.'],
+        ['Sunday in Brooklyn','Eat','Williamsburg','15 min cab','Brunch — the pancakes are the whole point.'],
+        ['Sailors','Drink','Fort Greene','12 min cab','Where we had our first date. Order the martini.'],
+        ['Brooklyn Museum','Do','Prospect Heights','20 min','Free-ish Thursdays, huge Egyptian wing.'],
+        ['Court Street Grocers','Eat','Carroll Gardens','15 min','Best sandwich in Brooklyn, we will fight about this.'],
+        ['Domino Park','Walk','Williamsburg','15 min cab','Take the ferry there — it\u2019s the cheapest boat tour in NY.'],
+        ['+ Add a place','','','','Type in the next row and it goes live']
+      ],
+      note:'10 places published · guests saw 47 taps this week'
+    }
+  };
+
+  renderVals(){
+    const S = this.state;
+    const sheetNames = Object.keys(this.sheets);
+    const name = this.sheets[S.tab] ? S.tab : sheetNames[0];
+    const sh = this.sheets[name];
+    const density = this.props.density ?? 'Comfortable';
+    const pad = density === 'Compact' ? '7px 10px' : density === 'Roomy' ? '15px 14px' : '11px 12px';
+    const fs = density === 'Compact' ? '11.5px' : '12.5px';
+
+    const tabs = sheetNames.map(n => ({
+      label: n, pick: () => this.setState({tab:n}),
+      style: `padding:11px 18px;border:0;border-right:1px solid #dadce0;background:${n===name?'#fff':'transparent'};color:${n===name?'#0d652d':'#5f6368'};font-size:12.5px;font-weight:${n===name?800:700};cursor:pointer;box-shadow:${n===name?'inset 0 -3px 0 '+this.sheets[n].acc:'none'}`
+    }));
+
+    const cells = [];
+    const push = (v, style) => cells.push({v, style});
+    const base = `padding:${pad};font-size:${fs};border-right:1px solid #e8eaed;border-bottom:1px solid #e8eaed;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#202124`;
+
+    sh.head.forEach((hcell, i) => push(hcell,
+      `${base};position:sticky;top:0;background:#f1f3f4;font-weight:800;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#5f6368;z-index:2;${i===0?'text-align:center':''}`));
+
+    sh.rows.forEach((row, r) => {
+      const special = String(row[0]).startsWith('—');
+      const zebra = r % 2 ? '#fff' : '#fbfbfa';
+      push(String(r + 2), `${base};background:#f1f3f4;color:#5f6368;text-align:center;font-size:10.5px;font-weight:700;position:sticky;left:0;z-index:1`);
+      row.forEach((v, c) => {
+        const isMoney = /^\$[\d,]+$/.test(String(v));
+        const tick = v === '✓';
+        const blank = v === '' || v === '—';
+        let extra = `background:${special ? '#f1f3f4' : zebra}`;
+        if (special) extra += ';font-weight:800;color:#202124';
+        if (isMoney) extra += `;text-align:right;font-weight:800;color:${sh.acc}`;
+        if (tick) extra += `;text-align:center;color:${sh.acc};font-weight:800`;
+        if (blank && !special) extra += ';color:#bdc1c6';
+        if (c === 0 && !special) extra += ';font-weight:700';
+        if (name === 'Guests & RSVP' && c === 4) {
+          if (v === 'Coming') extra += ';color:#0d652d;font-weight:800';
+          if (v === 'Declined') extra += ';color:#c5221f;font-weight:800';
+          if (v === '') extra += ';background:#fef7e0;color:#9a6b00;font-weight:700';
+        }
+        if (name === 'Caterer' && c === 3 && v && v !== '—' && !special) extra += ';color:#b06000;font-weight:700';
+        if (name === 'DJ list' && c === 2 && !special) extra += `;text-align:center;font-weight:800;color:${sh.acc}`;
+        push(blank && !special && !(name === 'Guests & RSVP' && c === 4) ? '—' : v, `${base};${extra}`);
+      });
+      for (let k = row.length; k < sh.head.length - 1; k++) push('', `${base};background:${zebra}`);
+    });
+
+    return {
+      tabs, cells, cols: sh.cols,
+      cellRef: sh.ref, formula: sh.formula,
+      bannerBg: sh.bg, bannerAcc: sh.acc, bannerIcon: sh.icon,
+      bannerTitle: sh.title, bannerBody: sh.body, bannerCta: sh.cta,
+      rowNote: sh.note
+    };
+  }
+}
+</script>
+</body>
+</html>
