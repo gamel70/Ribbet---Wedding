@@ -18,6 +18,15 @@ const nextConfig: NextConfig = {
     },
   },
 
+  // The home-screen icon reads its script face from assets/ at request time.
+  // Nothing imports the file, so the bundler can't see it and it would be left
+  // out of the deployment — every icon would then fall back to the default
+  // sans, on Vercel only, which is exactly the kind of thing that isn't noticed
+  // until a guest installs the app.
+  outputFileTracingIncludes: {
+    "/[slug]/app-icon/[size]": ["./assets/GreatVibes-Latin.ttf"],
+  },
+
   async headers() {
     return [
       {

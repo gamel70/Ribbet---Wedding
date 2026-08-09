@@ -38,14 +38,24 @@ export async function GET(_request: Request, ctx: RouteContext<"/[slug]/manifest
     // the status bar, which is the couple's colour showing up in the OS.
     background_color: theme.bg,
     theme_color: theme.accent,
-    icons: [192, 512].map((size) => ({
-      src: `${base}/app-icon/${size}`,
-      sizes: `${size}x${size}`,
-      type: "image/png",
-      // Full-bleed accent behind a centred monogram, so an Android mask can
-      // crop it to any shape without clipping the letters.
-      purpose: "any maskable",
-    })),
+    // Two purposes, two drawings — not one asset claiming both. The `any` icon
+    // uses the full square, ring close to the edge; the maskable one pulls the
+    // names and the rule into the safe zone so a launcher can crop a circle out
+    // of it and take nothing but accent.
+    icons: [192, 512].flatMap((size) => [
+      {
+        src: `${base}/app-icon/${size}`,
+        sizes: `${size}x${size}`,
+        type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: `${base}/app-icon/${size}?purpose=maskable`,
+        sizes: `${size}x${size}`,
+        type: "image/png",
+        purpose: "maskable",
+      },
+    ]),
   };
 
   return Response.json(manifest, {
