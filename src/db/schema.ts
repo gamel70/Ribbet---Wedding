@@ -243,6 +243,27 @@ export const photos = pgTable(
   ],
 );
 
+/**
+ * The guestbook wall. Post-first moderation, per screen 09 — a note is visible
+ * the moment it's written and the couple can take any down, which is what
+ * `hidden` is for.
+ */
+export const guestbookNotes = pgTable(
+  "guestbook_notes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    weddingId: uuid("wedding_id")
+      .notNull()
+      .references(() => weddings.id, { onDelete: "cascade" }),
+    householdId: uuid("household_id").references(() => households.id, { onDelete: "set null" }),
+    author: text("author").notNull(),
+    body: text("body").notNull(),
+    hidden: boolean("hidden").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("guestbook_notes_wedding_idx").on(t.weddingId)],
+);
+
 /** Reserved slugs the intake must reject before it even hits the uniqueness check. */
 export const reservedSlugs = pgTable("reserved_slugs", {
   slug: text("slug").primaryKey(),
