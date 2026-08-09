@@ -137,11 +137,64 @@ export const households = pgTable(
       .references(() => weddings.id, { onDelete: "cascade" }),
     label: text("label").notNull(),
     phone: text("phone"),
+    /**
+     * The household's private link. `/i/<token>` hands this browser the
+     * household's session — it is the thing the couple texts, so it is the only
+     * credential in the guest app and must stay unguessable.
+     */
+    inviteToken: text("invite_token").notNull(),
     inviteSentAt: timestamp("invite_sent_at", { withTimezone: true }),
     openedAt: timestamp("opened_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
-  (t) => [index("households_wedding_idx").on(t.weddingId)],
+  (t) => [
+    index("households_wedding_idx").on(t.weddingId),
+    uniqueIndex("households_invite_token_idx").on(t.inviteToken),
+  ],
+);
+
+/**
+ * The couple's RSVP feed: who claimed which household, who replied, and what
+ * they changed when they came back. A reply that quietly flips from Coming to
+ * Declined the week before is exactly the thing a couple needs to see.
+ */
+export const rsvpEvents = pgTable(
+  "rsvp_events",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    weddingId: uuid("wedding_id")
+      .notNull()
+      .references(() => weddings.id, { onDelete: "cascade" }),
+    householdId: uuid("household_id").references(() => households.id, { onDelete: "set null" }),
+    /** claimed · invited · submitted · changed · requested · approved · declined */
+    kind: text("kind").notNull(),
+    /** Human-readable, already formatted for the console feed. */
+    summary: text("summary").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("rsvp_events_wedding_idx").on(t.weddingId)],
+);
+
+/**
+ * Someone who couldn't find their name asking to be added. Lands in the
+ * console's approve queue; approving mints a household and an invite link.
+ */
+export const guestRequests = pgTable(
+  "guest_requests",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    weddingId: uuid("wedding_id")
+      .notNull()
+      .references(() => weddings.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    note: text("note"),
+    /** pending · approved · declined */
+    status: text("status").notNull().default("pending"),
+    householdId: uuid("household_id").references(() => households.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    resolvedAt: timestamp("resolved_at", { withTimezone: true }),
+  },
+  (t) => [index("guest_requests_wedding_idx").on(t.weddingId)],
 );
 
 export const guests = pgTable(

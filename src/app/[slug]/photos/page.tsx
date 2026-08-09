@@ -4,7 +4,7 @@ import { resolveSections } from "@/lib/design";
 import { currentHousehold, weddingBySlug } from "@/lib/guest";
 import { householdPhotos } from "@/lib/vault";
 
-import { Eyebrow, Lede, Panel, ScreenTitle } from "../ui";
+import { Eyebrow, IdentifyPrompt, Lede, Panel, ScreenTitle } from "../ui";
 import { VaultUploader } from "./uploader";
 
 /** Screen 04 — Photos. The guest sees only their own uploads; the couple sees all. */
@@ -88,7 +88,11 @@ export default async function PhotosScreen({ params }: PageProps<"/[slug]/photos
         </div>
       )}
 
-      <VaultUploader slug={slug} />
+      {household ? (
+        <VaultUploader slug={slug} />
+      ) : (
+        <IdentifyPrompt slug={slug} next={`/${slug}/photos`} what="Every photo you send" />
+      )}
 
       <div style={{ marginTop: 12, fontSize: 11, lineHeight: 1.6, color: "var(--mut)" }}>
         Originals only — nothing is compressed on the way in. Uploads keep going in the background; if signal drops,

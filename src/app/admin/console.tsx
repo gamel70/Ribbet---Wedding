@@ -11,6 +11,7 @@ import { displayTime } from "@/lib/schedule";
 import type { ResolvedSection } from "@/lib/sections";
 
 import { saveDetails, saveLook, saveSchedule, saveSections } from "./actions";
+import { Invites, type FeedRow, type InviteRow, type RequestRow } from "./invites";
 
 const INK = "#201e1d";
 const RULE = "#e0dcd4";
@@ -40,10 +41,11 @@ export type ConsoleTableRow = {
   submittedAt: string | null;
 };
 
-type Tab = "guests" | "details" | "sections" | "look";
+type Tab = "guests" | "invites" | "details" | "sections" | "look";
 
 const TABS: Array<[Tab, string]> = [
   ["guests", "Guests & RSVP"],
+  ["invites", "Invites & requests"],
   ["details", "The details"],
   ["sections", "Sections"],
   ["look", "Look"],
@@ -63,6 +65,10 @@ export function Console({
   schedule,
   stats,
   table,
+  invites,
+  requests,
+  feed,
+  origin,
 }: {
   wedding: ConsoleWedding;
   email: string;
@@ -70,6 +76,10 @@ export function Console({
   schedule: ScheduleEntry[];
   stats: ConsoleStats;
   table: ConsoleTableRow[];
+  invites: InviteRow[];
+  requests: RequestRow[];
+  feed: FeedRow[];
+  origin: string;
 }) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("guests");
@@ -251,6 +261,19 @@ export function Console({
                 }}
               >
                 {label}
+                {key === "invites" && requests.length ? (
+                  <span
+                    style={{
+                      marginLeft: 8,
+                      padding: "1px 6px",
+                      background: accent,
+                      color: accInk,
+                      fontSize: 10,
+                    }}
+                  >
+                    {requests.length}
+                  </span>
+                ) : null}
               </button>
             ))}
             <div style={{ flex: 1 }} />
@@ -364,6 +387,18 @@ export function Console({
                   </div>
                 ) : null}
               </>
+            ) : null}
+
+            {/* ----------------------------------------------- INVITES ---- */}
+            {tab === "invites" ? (
+              <Invites
+                origin={origin}
+                invites={invites}
+                requests={requests}
+                feed={feed}
+                accent={accent}
+                accentInk={accInk}
+              />
             ) : null}
 
             {/* ----------------------------------------------- DETAILS ---- */}

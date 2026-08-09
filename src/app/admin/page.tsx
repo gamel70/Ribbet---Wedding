@@ -1,12 +1,14 @@
+import { headers } from "next/headers";
 import Link from "next/link";
 import { getServerSession } from "next-auth";
 
 import { authOptions } from "@/lib/auth";
-import { consoleStats, guestTable } from "@/lib/console-stats";
+import { consoleStats, guestTable, pendingRequests } from "@/lib/console-stats";
 import { formatDateText } from "@/lib/dates";
 import { resolveSections } from "@/lib/design";
 import { resolveSchedule } from "@/lib/schedule";
 import { resolveSectionList } from "@/lib/sections";
+import { recentRsvpEvents } from "@/lib/guest";
 import { findWedding } from "@/lib/wedding";
 
 import { Console } from "./console";
@@ -60,7 +62,18 @@ export default async function AdminPage() {
     );
   }
 
-  const [stats, table] = await Promise.all([consoleStats(wedding.id), guestTable(wedding.id)]);
+  const [stats, table, requests, feed, headerList] = await Promise.all([
+    consoleStats(wedding.id),
+    guestTable(wedding.id),
+    pendingRequests(wedding.id),
+    recentRsvpEvents(wedding.id),
+    headers(),
+  ]);
+
+  // Invite links have to be absolute — the couple pastes them into a text.
+  const host = headerList.get("x-forwarded-host") ?? headerList.get("host") ?? "localhost:3000";
+  const proto = headerList.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
+  const origin = `${proto}://${host}`;
 
   return (
     <Console
@@ -84,6 +97,26 @@ export default async function AdminPage() {
       schedule={resolveSchedule(wedding.schedule)}
       stats={stats}
       table={table.map((row) => ({ ...row, submittedAt: row.submittedAt?.toISOString() ?? null }))}
+      origin={origin}
+      invites={table.map((row) => ({
+        id: row.id,
+        household: row.household,
+        names: row.names,
+        inviteToken: row.inviteToken,
+        replied: Boolean(row.submittedAt),
+      }))}
+      requests={requests.map((r) => ({
+        id: r.id,
+        name: r.name,
+        note: r.note,
+        createdAt: r.createdAt.toISOString(),
+      }))}
+      feed={feed.map((e) => ({
+        id: e.id,
+        kind: e.kind,
+        summary: e.summary,
+        createdAt: e.createdAt.toISOString(),
+      }))}
     />
   );
 }

@@ -9,7 +9,6 @@ import { submitRsvp, type RsvpPerson } from "../actions";
 import { Eyebrow, Lede, Panel, ScreenTitle, accentButtonStyle, panelStyle } from "../ui";
 
 export type RsvpDraft = {
-  householdLabel: string;
   reply: "yes" | "no" | null;
   people: RsvpPerson[];
   shuttle: boolean;
@@ -17,6 +16,7 @@ export type RsvpDraft = {
   songTitle: string;
   songArtist: string;
   submitted: boolean;
+  submittedAt: string | null;
 };
 
 /**
@@ -27,12 +27,14 @@ export type RsvpDraft = {
  */
 export function RsvpForm({
   slug,
+  householdLabel,
   draft,
   showMenu,
   showSongs,
   showShuttle,
 }: {
   slug: string;
+  householdLabel: string;
   draft: RsvpDraft;
   showMenu: boolean;
   showSongs: boolean;
@@ -41,7 +43,6 @@ export function RsvpForm({
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
-  const [householdLabel, setHouseholdLabel] = useState(draft.householdLabel);
   const [reply, setReply] = useState<"yes" | "no" | null>(draft.reply);
   const [people, setPeople] = useState<RsvpPerson[]>(draft.people);
   const [shuttle, setShuttle] = useState(draft.shuttle);
@@ -99,7 +100,6 @@ export function RsvpForm({
     startTransition(async () => {
       const result = await submitRsvp({
         slug,
-        householdLabel,
         reply,
         people: named,
         shuttle,
@@ -122,22 +122,23 @@ export function RsvpForm({
     <>
       <ScreenTitle>RSVP</ScreenTitle>
       <Lede>
-        One reply for your household — change it any time before the day. {attending.length || "No"}{" "}
-        {attending.length === 1 ? "seat" : "seats"} held so far.
+        Replying for <strong style={{ color: "var(--ink)" }}>{householdLabel}</strong> — one reply covers everyone.
+        Change it any time before the day.
       </Lede>
+
+      {draft.submitted ? (
+        <Panel style={{ marginTop: 14, borderColor: "var(--acc)" }}>
+          <div style={{ fontSize: 13, fontWeight: 800 }}>
+            You&apos;ve already replied{draft.reply === "yes" ? " — coming" : draft.reply === "no" ? " — can't make it" : ""}.
+          </div>
+          <div style={{ fontSize: 11.5, color: "var(--mut)", marginTop: 3, lineHeight: 1.5 }}>
+            Everything below is what you sent. Change anything and send again — the couple sees the change.
+          </div>
+        </Panel>
+      ) : null}
 
       <div style={{ marginTop: 16, height: 4, background: "var(--panel)" }}>
         <div style={{ height: "100%", width: `${progress}%`, background: "var(--acc)", transition: "width .4s ease" }} />
-      </div>
-
-      <div style={{ marginTop: 18 }}>
-        <Eyebrow>Your household</Eyebrow>
-        <input
-          value={householdLabel}
-          onChange={(e) => setHouseholdLabel(e.target.value)}
-          placeholder="Marchetti-Lee"
-          style={{ ...inputStyle, marginTop: 8 }}
-        />
       </div>
 
       <div style={{ marginTop: 18, display: "flex", gap: 8 }}>

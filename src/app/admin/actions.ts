@@ -1,13 +1,14 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import { db } from "@/db";
-import { LOCKED_SECTIONS, SECTION_KEYS, weddings } from "@/db/schema";
+import { LOCKED_SECTIONS, SECTION_KEYS, guestRequests, guests, households, weddings } from "@/db/schema";
 import type { Layout, Palette, ScheduleEntry, SectionKey, SectionMetaMap, Sections } from "@/db/schema";
 import { parseDateText } from "@/lib/dates";
 import { LAYOUTS, PALETTES, resolveSections } from "@/lib/design";
+import { logRsvpEvent, newInviteToken } from "@/lib/guest";
 import { minutesOf } from "@/lib/schedule";
 import { findWedding, requireGoogleSub } from "@/lib/wedding";
 
@@ -121,6 +122,100 @@ export async function saveSections(input: SectionsInput): Promise<SaveResult> {
     .where(eq(weddings.id, wedding.id));
 
   goLive(wedding.slug);
+  return { ok: true };
+}
+
+// ------------------------------------------------------ guest list ---------
+
+/**
+ * Creates a household and its people, and mints the invite link the couple
+ * texts. This — and approving a request — are the only ways a household comes
+ * into existence; guests can claim one but never invent one.
+ */
+export async function addHousehold(label: string, names: string[]): Promise<SaveResult> {
+  const wedding = await requireOwnedWedding();
+
+  const people = names.map((n) => n.trim()).filter(Boolean).slice(0, 12);
+  const cleanLabel = label.trim().slice(0, 120) || people[0];
+
+  if (!cleanLabel) return { ok: false, error: "Give the household a name." };
+  if (!people.length) return { ok: false, error: "Add at least one person." };
+
+  const [household] = await db
+    .insert(households)
+    .values({ weddingId: wedding.id, label: cleanLabel, inviteToken: newInviteToken() })
+    .returning();
+
+  await db.insert(guests).values(people.map((name) => ({ householdId: household.id, name })));
+
+  await logRsvpEvent(wedding.id, household.id, "added", `${cleanLabel} added to the guest list`);
+  goLive(wedding.slug);
+  return { ok: true };
+}
+
+export async function removeHousehold(householdId: string): Promise<SaveResult> {
+  const wedding = await requireOwnedWedding();
+
+  // Scoped to this wedding, so an id from elsewhere deletes nothing.
+  const result = await db
+    .delete(households)
+    .where(and(eq(households.id, householdId), eq(households.weddingId, wedding.id)))
+    .returning({ label: households.label });
+
+  if (result.length) {
+    await logRsvpEvent(wedding.id, null, "removed", `${result[0].label} removed from the guest list`);
+  }
+
+  goLive(wedding.slug);
+  return { ok: true };
+}
+
+/** Approving a request mints the household and its invite link. */
+export async function approveRequest(requestId: string, label: string): Promise<SaveResult> {
+  const wedding = await requireOwnedWedding();
+
+  const [request] = await db
+    .select()
+    .from(guestRequests)
+    .where(and(eq(guestRequests.id, requestId), eq(guestRequests.weddingId, wedding.id)))
+    .limit(1);
+
+  if (!request) return { ok: false, error: "That request is gone." };
+  if (request.status !== "pending") return { ok: false, error: "That request was already dealt with." };
+
+  const [household] = await db
+    .insert(households)
+    .values({
+      weddingId: wedding.id,
+      label: label.trim().slice(0, 120) || request.name,
+      inviteToken: newInviteToken(),
+    })
+    .returning();
+
+  await db.insert(guests).values({ householdId: household.id, name: request.name });
+
+  await db
+    .update(guestRequests)
+    .set({ status: "approved", householdId: household.id, resolvedAt: new Date() })
+    .where(eq(guestRequests.id, request.id));
+
+  await logRsvpEvent(wedding.id, household.id, "approved", `${request.name} approved and added`);
+  goLive(wedding.slug);
+  return { ok: true };
+}
+
+export async function declineRequest(requestId: string): Promise<SaveResult> {
+  const wedding = await requireOwnedWedding();
+
+  const [request] = await db
+    .update(guestRequests)
+    .set({ status: "declined", resolvedAt: new Date() })
+    .where(and(eq(guestRequests.id, requestId), eq(guestRequests.weddingId, wedding.id)))
+    .returning({ name: guestRequests.name });
+
+  if (request) await logRsvpEvent(wedding.id, null, "declined", `${request.name}'s request declined`);
+
+  revalidatePath("/admin");
   return { ok: true };
 }
 

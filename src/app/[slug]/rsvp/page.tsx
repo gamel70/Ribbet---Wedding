@@ -1,5 +1,5 @@
-import { inArray } from "drizzle-orm";
-import { notFound } from "next/navigation";
+import { eq, inArray } from "drizzle-orm";
+import { notFound, redirect } from "next/navigation";
 
 import { db } from "@/db";
 import { guestMeals, songRequests } from "@/db/schema";
@@ -14,10 +14,14 @@ export default async function RsvpScreen({ params }: PageProps<"/[slug]/rsvp">) 
   const wedding = await weddingBySlug(slug);
   if (!wedding) notFound();
 
-  const sections = resolveSections(wedding.sections);
+  // Browsing is open; replying is not. Without a session — an invite link or a
+  // claim against the guest list — there is no household to reply for.
   const household = await currentHousehold(wedding.id);
-  const people = household ? await householdGuests(household.id) : [];
-  const reply = household ? await householdRsvp(household.id) : null;
+  if (!household) redirect(`/${slug}/who?next=/${slug}/rsvp`);
+
+  const sections = resolveSections(wedding.sections);
+  const people = await householdGuests(household.id);
+  const reply = await householdRsvp(household.id);
 
   const meals = people.length
     ? await db
@@ -26,30 +30,25 @@ export default async function RsvpScreen({ params }: PageProps<"/[slug]/rsvp">) 
         .where(inArray(guestMeals.guestId, people.map((p) => p.id)))
     : [];
 
-  const song = household
-    ? (
-        await db
-          .select()
-          .from(songRequests)
-          .where(inArray(songRequests.householdId, [household.id]))
-          .limit(1)
-      )[0]
-    : undefined;
+  const [song] = await db
+    .select()
+    .from(songRequests)
+    .where(eq(songRequests.householdId, household.id))
+    .limit(1);
 
   const draft: RsvpDraft = {
-    householdLabel: household?.label ?? "",
     reply: (reply?.reply as "yes" | "no" | null) ?? null,
     shuttle: reply?.shuttle ?? false,
     note: reply?.note ?? "",
     songTitle: song?.title ?? "",
     songArtist: song?.artist ?? "",
     submitted: Boolean(reply?.submittedAt),
+    submittedAt: reply?.submittedAt?.toISOString() ?? null,
     people: people.length
       ? people.map((p) => {
           const meal = meals.find((m) => m.guestId === p.id);
           return {
             name: p.name,
-            // A saved person is attending unless the household declined.
             attending: reply?.reply !== "no",
             isChild: p.isChild,
             main: meal?.main ?? null,
@@ -63,6 +62,7 @@ export default async function RsvpScreen({ params }: PageProps<"/[slug]/rsvp">) 
   return (
     <RsvpForm
       slug={slug}
+      householdLabel={household.label}
       draft={draft}
       showMenu={sections.menu}
       showSongs={sections.songs}

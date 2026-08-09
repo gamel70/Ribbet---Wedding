@@ -1,7 +1,17 @@
-import { eq, sql } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 
 import { db } from "@/db";
-import { guestMeals, guestbookNotes, guests, households, photos, pledges, rsvps, songRequests } from "@/db/schema";
+import {
+  guestMeals,
+  guestRequests,
+  guestbookNotes,
+  guests,
+  households,
+  photos,
+  pledges,
+  rsvps,
+  songRequests,
+} from "@/db/schema";
 
 /**
  * The console's live numbers, straight out of the database — the same source of
@@ -99,6 +109,8 @@ export async function consoleStats(weddingId: string): Promise<ConsoleStats> {
 }
 
 export type GuestTableRow = {
+  id: string;
+  inviteToken: string;
   household: string;
   names: string;
   reply: "yes" | "no" | null;
@@ -114,6 +126,7 @@ export async function guestTable(weddingId: string): Promise<GuestTableRow[]> {
     .select({
       id: households.id,
       label: households.label,
+      inviteToken: households.inviteToken,
       reply: rsvps.reply,
       attending: rsvps.attendingCount,
       note: rsvps.note,
@@ -138,6 +151,8 @@ export async function guestTable(weddingId: string): Promise<GuestTableRow[]> {
     .map((row) => {
       const mine = people.filter((p) => p.householdId === row.id);
       return {
+        id: row.id,
+        inviteToken: row.inviteToken,
         household: row.label,
         names: mine.map((p) => p.name).join(", "),
         reply: (row.reply as "yes" | "no" | null) ?? null,
@@ -148,4 +163,13 @@ export async function guestTable(weddingId: string): Promise<GuestTableRow[]> {
       };
     })
     .sort((a, b) => a.household.localeCompare(b.household));
+}
+
+/** Requests still waiting on the couple, oldest first. */
+export async function pendingRequests(weddingId: string) {
+  return db
+    .select()
+    .from(guestRequests)
+    .where(and(eq(guestRequests.weddingId, weddingId), eq(guestRequests.status, "pending")))
+    .orderBy(asc(guestRequests.createdAt));
 }

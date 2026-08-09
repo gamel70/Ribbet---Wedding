@@ -21,7 +21,7 @@ import {
   WEDDING_PARTY,
 } from "@/lib/wedding-content";
 
-import { Eyebrow, Lede, Panel, ScreenTitle, SubTitle, panelStyle } from "../../ui";
+import { Eyebrow, IdentifyPrompt, Lede, Panel, ScreenTitle, SubTitle, panelStyle } from "../../ui";
 import { GuestbookForm, SongForm } from "../guest-forms";
 import { MORE_SECTIONS } from "../section-meta";
 
@@ -197,6 +197,7 @@ function Menu({ title }: { title?: string }) {
 // ---------------------------------------------------------------- screen 09 --
 
 async function Guestbook({ slug, weddingId, title }: { slug: string; weddingId: string; title?: string }) {
+  const household = await currentHousehold(weddingId);
   const notes = await db
     .select()
     .from(guestbookNotes)
@@ -229,7 +230,11 @@ async function Guestbook({ slug, weddingId, title }: { slug: string; weddingId: 
         </div>
       )}
 
-      <GuestbookForm slug={slug} />
+      {household ? (
+        <GuestbookForm slug={slug} />
+      ) : (
+        <IdentifyPrompt slug={slug} next={`/${slug}/more/guestbook`} what="Your note" />
+      )}
     </>
   );
 }
@@ -277,7 +282,11 @@ async function Songs({ slug, weddingId, title }: { slug: string; weddingId: stri
         </Panel>
       ) : null}
 
-      <SongForm slug={slug} currentTitle={mine?.title ?? ""} currentArtist={mine?.artist ?? ""} />
+      {household ? (
+        <SongForm slug={slug} currentTitle={mine?.title ?? ""} currentArtist={mine?.artist ?? ""} />
+      ) : (
+        <IdentifyPrompt slug={slug} next={`/${slug}/more/songs`} what="Your request" />
+      )}
     </>
   );
 }

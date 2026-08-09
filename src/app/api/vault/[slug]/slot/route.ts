@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 
 import { resolveSections } from "@/lib/design";
-import { ensureHousehold, weddingBySlug } from "@/lib/guest";
+import { currentHousehold, weddingBySlug } from "@/lib/guest";
 import { checkQuota, createUploadSession, datedSubfolderName, ensureSubfolder } from "@/lib/vault";
 
 /**
@@ -22,6 +22,16 @@ export async function POST(request: NextRequest, ctx: RouteContext<"/api/vault/[
   }
   if (!wedding.driveFolderId) {
     return Response.json({ error: "The photo vault hasn't been created yet" }, { status: 409 });
+  }
+
+  // A slot is attributed to a household, so an unidentified browser can't mint
+  // one — this is the same gate the Photos screen shows as "find my name".
+  const household = await currentHousehold(wedding.id);
+  if (!household) {
+    return Response.json(
+      { error: "identify", message: "Tell us who you are before sending photos." },
+      { status: 403 },
+    );
   }
 
   let body: { name?: string; mimeType?: string; sizeBytes?: number };
@@ -53,8 +63,6 @@ export async function POST(request: NextRequest, ctx: RouteContext<"/api/vault/[
         { status: 507 },
       );
     }
-
-    const household = await ensureHousehold(wedding.id, "Guest");
 
     const subfolder = await ensureSubfolder(
       wedding.ownerGoogleSub,

@@ -69,6 +69,43 @@ export const accentButtonStyle: CSSProperties = {
   fontFamily: "inherit",
 };
 
+/**
+ * Shown in place of any form when this browser hasn't proved which household it
+ * belongs to. Reading the app never needs this; writing to it always does.
+ */
+export function IdentifyPrompt({
+  slug,
+  next,
+  what,
+}: {
+  slug: string;
+  next: string;
+  what: string;
+}) {
+  return (
+    <div
+      style={{
+        ...panelStyle,
+        padding: "18px 16px",
+        marginTop: 14,
+        borderStyle: "dashed",
+      }}
+    >
+      <div style={{ fontSize: 13, fontWeight: 800 }}>Tell us who you are first</div>
+      <div style={{ fontSize: 12, lineHeight: 1.6, color: "var(--mut)", marginTop: 5 }}>
+        {what} goes to the couple with your name on it. Find yourself on their guest list — or open the link they
+        texted you, and this is already done.
+      </div>
+      <a
+        href={`/${slug}/who?next=${encodeURIComponent(next)}`}
+        style={{ ...accentButtonStyle, marginTop: 14, width: "auto" }}
+      >
+        Find my name →
+      </a>
+    </div>
+  );
+}
+
 /** A single line of the "waiting on you" list. */
 export function RowLink({
   href,
