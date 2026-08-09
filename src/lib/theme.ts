@@ -15,6 +15,9 @@ export type GuestTheme = {
   vars: CSSProperties;
   accent: string;
   accentInk: string;
+  /** The page background, named so callers outside CSS — the web manifest's
+   *  splash colour, for one — don't have to index into `vars`. */
+  bg: string;
   layout: Layout;
 };
 
@@ -31,6 +34,7 @@ export function guestTheme(input: {
     layout: input.layout,
     accent,
     accentInk: ink,
+    bg: l.bg,
     vars: {
       "--bg": l.bg,
       "--panel": l.panel,

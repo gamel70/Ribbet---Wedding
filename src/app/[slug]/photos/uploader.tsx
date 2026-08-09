@@ -1,17 +1,21 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+
+import { enqueueUpload, queuedUploads, requestDrain } from "@/lib/upload-queue";
 
 import { accentButtonStyle, panelStyle } from "../ui";
 
 type Job = {
   id: string;
   name: string;
-  status: "waiting" | "uploading" | "done" | "failed";
+  status: "waiting" | "uploading" | "queued" | "done" | "failed";
   percent: number;
   error?: string;
 };
+
+const WAITING_FOR_SIGNAL = "Held on your phone. This sends itself the moment you're back on signal.";
 
 /**
  * Direct-to-Drive uploader.
@@ -20,6 +24,11 @@ type Job = {
  * canvas, no resize, no re-encode, no EXIF stripping. It is PUT straight at a
  * resumable session URI minted server-side, so the bytes never pass through the
  * app and the capture timestamp and orientation survive intact.
+ *
+ * With no signal the same file goes to IndexedDB instead, byte for byte, and
+ * `public/sw.js` sends it when the connection comes back — which is the point
+ * of the whole arrangement, because the reception is exactly where the photos
+ * are taken and exactly where the wifi isn't.
  */
 export function VaultUploader({ slug }: { slug: string }) {
   const router = useRouter();
@@ -27,22 +36,120 @@ export function VaultUploader({ slug }: { slug: string }) {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
 
-  const update = (id: string, patch: Partial<Job>) =>
-    setJobs((prev) => prev.map((j) => (j.id === id ? { ...j, ...patch } : j)));
+  const update = useCallback(
+    (id: string, patch: Partial<Job>) => setJobs((prev) => prev.map((j) => (j.id === id ? { ...j, ...patch } : j))),
+    [],
+  );
+
+  /** Hand a photo to the queue rather than lose it. */
+  const hold = useCallback(
+    async (file: File, id: string) => {
+      try {
+        await enqueueUpload({ id, slug, file });
+        update(id, { status: "queued", percent: 0, error: WAITING_FOR_SIGNAL });
+        await requestDrain();
+      } catch {
+        update(id, {
+          status: "failed",
+          error: "This phone wouldn't let us hold on to it. Try again when you have signal.",
+        });
+      }
+    },
+    [slug, update],
+  );
+
+  // A reload shouldn't make a waiting photo look lost — anything still in the
+  // queue comes back onto the list exactly as it was left.
+  useEffect(() => {
+    let live = true;
+    void queuedUploads(slug)
+      .then((queued) => {
+        if (!live || !queued.length) return;
+        setJobs((prev) => {
+          const known = new Set(prev.map((j) => j.id));
+          const restored = queued
+            .filter((item) => !known.has(item.id))
+            .map<Job>((item) => ({
+              id: item.id,
+              name: item.name,
+              status: "queued",
+              percent: 0,
+              error: WAITING_FOR_SIGNAL,
+            }));
+          return [...restored, ...prev];
+        });
+      })
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, [slug]);
+
+  // The worker does the sending once a photo is queued, so it's the worker that
+  // says how it went.
+  useEffect(() => {
+    if (!("serviceWorker" in navigator)) return;
+
+    const onMessage = (event: MessageEvent) => {
+      const data = event.data ?? {};
+      // Only the row's own state here — the grid below is refreshed by the
+      // ServiceWorkerBridge in the layout, which hears the same message.
+      if (data.type === "ribbet-upload-sent") {
+        update(data.id, { status: "done", percent: 100, error: undefined });
+      }
+      if (data.type === "ribbet-upload-dropped") {
+        update(data.id, { status: "failed", error: data.reason });
+      }
+      if (data.type === "ribbet-vault-full") {
+        setNotice(
+          "The couple's Drive is full, so your photos are waiting rather than lost. They've been told — they'll send when there's room.",
+        );
+      }
+    };
+
+    const onOnline = () => void requestDrain();
+
+    navigator.serviceWorker.addEventListener("message", onMessage);
+    window.addEventListener("online", onOnline);
+    return () => {
+      navigator.serviceWorker.removeEventListener("message", onMessage);
+      window.removeEventListener("online", onOnline);
+    };
+  }, [update]);
 
   const uploadOne = async (file: File, id: string) => {
+    // Don't make someone in a field watch a progress bar that can't move.
+    if (!navigator.onLine) return hold(file, id);
+
     update(id, { status: "uploading", percent: 0 });
 
-    const slotRes = await fetch(`/api/vault/${slug}/slot`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: file.name, mimeType: file.type || "application/octet-stream", sizeBytes: file.size }),
-    });
+    let slotRes: Response;
+    try {
+      slotRes = await fetch(`/api/vault/${slug}/slot`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: file.name,
+          mimeType: file.type || "application/octet-stream",
+          sizeBytes: file.size,
+        }),
+      });
+    } catch {
+      // The signal went between tapping and asking. Queue it.
+      return hold(file, id);
+    }
 
     if (!slotRes.ok) {
       const payload = await slotRes.json().catch(() => ({}));
+
+      // A full Drive is the couple's problem to solve, not a reason to drop the
+      // guest's photo — hold it and say so.
+      if (slotRes.status === 507) {
+        setNotice(payload.message ?? null);
+        return hold(file, id);
+      }
+
       update(id, { status: "failed", error: payload.message ?? "Couldn't start the upload." });
-      if (slotRes.status === 507) setNotice(payload.message ?? null);
       return;
     }
 
@@ -75,16 +182,21 @@ export function VaultUploader({ slug }: { slug: string }) {
       xhr.send(file);
     });
 
-    if (!fileId) {
-      update(id, { status: "failed", error: "The upload didn't finish. It'll retry when you're back on signal." });
+    // Whatever went wrong mid-transfer, the photo itself is still here.
+    if (!fileId) return hold(file, id);
+
+    try {
+      await fetch(`/api/vault/${slug}/complete`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fileId, takenAt: new Date(file.lastModified).toISOString() }),
+      });
+    } catch {
+      // Drive has the bytes; only the attribution row is missing. Saying "sent"
+      // is the truth — it just may not appear in the grid below until later.
+      update(id, { status: "done", percent: 100, error: "Sent. It may take a moment to appear here." });
       return;
     }
-
-    await fetch(`/api/vault/${slug}/complete`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ fileId, takenAt: new Date(file.lastModified).toISOString() }),
-    });
 
     update(id, { status: "done", percent: 100 });
     router.refresh();
@@ -145,14 +257,26 @@ export function VaultUploader({ slug }: { slug: string }) {
                 >
                   {job.name}
                 </span>
-                <span style={{ fontSize: 11, color: job.status === "failed" ? "#b8240e" : "var(--mut)" }}>
+                <span
+                  style={{
+                    fontSize: 11,
+                    color:
+                      job.status === "failed"
+                        ? "#b8240e"
+                        : job.status === "queued"
+                          ? "var(--acc)"
+                          : "var(--mut)",
+                  }}
+                >
                   {job.status === "done"
                     ? "Sent"
                     : job.status === "failed"
-                      ? "Queued"
-                      : job.status === "uploading"
-                        ? `${job.percent}%`
-                        : "Waiting"}
+                      ? "Didn't send"
+                      : job.status === "queued"
+                        ? "Waiting for signal"
+                        : job.status === "uploading"
+                          ? `${job.percent}%`
+                          : "Waiting"}
                 </span>
               </div>
               {job.status === "uploading" ? (

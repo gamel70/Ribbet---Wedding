@@ -1,12 +1,14 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { resolveSections } from "@/lib/design";
 import { weddingBySlug } from "@/lib/guest";
+import { weddingAppName, weddingShortName } from "@/lib/pwa";
 import { resolveSectionList } from "@/lib/sections";
 import { guestTheme } from "@/lib/theme";
 
+import { ServiceWorkerBridge } from "./service-worker";
 import { TabBar, type TabKey } from "./tab-bar";
 
 /**
@@ -23,6 +25,39 @@ export async function generateMetadata({ params }: LayoutProps<"/[slug]">): Prom
   return {
     title: names ? `${names}` : "Our wedding",
     description: wedding.venue ?? undefined,
+
+    // Installability, per wedding. The manifest, the icon and the iOS title all
+    // hang off this slug, so what lands on a guest's home screen is the couple's
+    // names and the couple's colour — never "Ribbet".
+    manifest: `/${slug}/manifest.webmanifest`,
+    applicationName: weddingAppName(wedding),
+    appleWebApp: {
+      capable: true,
+      title: weddingShortName(wedding, slug),
+      statusBarStyle: "default",
+    },
+    icons: {
+      icon: [{ url: `/${slug}/app-icon/192`, sizes: "192x192", type: "image/png" }],
+      apple: [{ url: `/${slug}/app-icon/180`, sizes: "180x180", type: "image/png" }],
+    },
+  };
+}
+
+/**
+ * The accent reaches the OS itself: Android tints the status bar with it, and
+ * it's the colour behind the splash while a standalone launch boots.
+ */
+export async function generateViewport({ params }: LayoutProps<"/[slug]">): Promise<Viewport> {
+  const { slug } = await params;
+  const wedding = await weddingBySlug(slug);
+
+  return {
+    width: "device-width",
+    initialScale: 1,
+    // Installed, the app owns the whole screen — including behind the notch and
+    // the home indicator, which the safe-area padding below accounts for.
+    viewportFit: "cover",
+    themeColor: wedding ? guestTheme(wedding).accent : "#b98d4f",
   };
 }
 
@@ -45,6 +80,10 @@ export default async function GuestLayout({ children, params }: LayoutProps<"/[s
 
   tabs.push({ key: "more", label: "More" });
 
+  // What the worker pre-fetches so the first offline launch has somewhere to
+  // land: exactly the tabs this couple switched on, no more.
+  const warm = tabs.map((tab) => (tab.key === "home" ? `/${slug}` : `/${slug}/${tab.key}`));
+
   return (
     <div
       style={{
@@ -65,8 +104,13 @@ export default async function GuestLayout({ children, params }: LayoutProps<"/[s
           display: "flex",
           flexDirection: "column",
           background: "var(--bg)",
+          // Installed on a notched phone the app draws edge to edge, so the
+          // status bar mustn't land on top of the couple's names.
+          paddingTop: "env(safe-area-inset-top)",
         }}
       >
+        <ServiceWorkerBridge slug={slug} warm={warm} />
+
         <main style={{ flex: 1, padding: "26px 26px 24px" }}>{children}</main>
 
         {/*

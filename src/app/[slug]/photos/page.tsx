@@ -95,8 +95,8 @@ export default async function PhotosScreen({ params }: PageProps<"/[slug]/photos
       )}
 
       <div style={{ marginTop: 12, fontSize: 11, lineHeight: 1.6, color: "var(--mut)" }}>
-        Originals only — nothing is compressed on the way in. Uploads keep going in the background; if signal drops,
-        pick the photo again when you&apos;re back on.
+        Originals only — nothing is compressed on the way in. Uploads keep going in the background, and anything you
+        send with no signal waits on your phone and sends itself when you&apos;re back on.
       </div>
     </>
   );

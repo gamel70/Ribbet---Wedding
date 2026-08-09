@@ -6,8 +6,10 @@ import { guestMeals } from "@/db/schema";
 import { daysUntil } from "@/lib/dates";
 import { resolveSections } from "@/lib/design";
 import { currentHousehold, householdGuests, householdRsvp, weddingBySlug } from "@/lib/guest";
+import { weddingAppName } from "@/lib/pwa";
 import { HOME_QUOTE } from "@/lib/wedding-content";
 
+import { InstallHint } from "./install-hint";
 import { Eyebrow, RowLink } from "./ui";
 
 /** Screen 01 — Home. Date eyebrow, 44px names, accent rule, stat strip, to-do list. */
@@ -124,6 +126,13 @@ export default async function HomeScreen({ params }: PageProps<"/[slug]">) {
       >
         {HOME_QUOTE}
       </div>
+
+      {/*
+        Last thing on the screen on purpose. The couple's note is the close of
+        the home tab; an install prompt is an offer, not an announcement, and it
+        shouldn't come between a guest and what they were sent here to read.
+      */}
+      <InstallHint slug={slug} appName={weddingAppName(wedding)} />
     </>
   );
 }
