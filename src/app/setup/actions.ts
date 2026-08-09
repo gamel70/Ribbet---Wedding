@@ -8,6 +8,7 @@ import { LOCKED_SECTIONS, SECTION_KEYS, weddings } from "@/db/schema";
 import type { Layout, Palette, SectionKey, Sections } from "@/db/schema";
 import { parseDateText } from "@/lib/dates";
 import { LAYOUTS, PALETTES, resolveSections } from "@/lib/design";
+import { reauthReasonFor, type ReauthReason } from "@/lib/google";
 import { provisionWedding, type ProvisionResult } from "@/lib/provision";
 import { cleanDomain } from "@/lib/slug";
 import { checkSlug, findOrCreateWedding, findWedding, requireGoogleSub } from "@/lib/wedding";
@@ -148,7 +149,7 @@ export async function checkSlugAvailability(raw: string): Promise<SlugCheckResul
 
 export type BuildResult =
   | { ok: true; result: ProvisionResult; slug: string; publicUrl: string }
-  | { ok: false; error: string };
+  | { ok: false; error: string; reauth: ReauthReason | null };
 
 /**
  * "Create it" — the real thing. Creates the Drive folder, creates the
@@ -158,7 +159,9 @@ export type BuildResult =
 export async function buildWedding(): Promise<BuildResult> {
   const googleSub = await requireGoogleSub();
   const wedding = await findWedding(googleSub);
-  if (!wedding) return { ok: false, error: "Nothing saved yet — fill in the details first." };
+  if (!wedding) {
+    return { ok: false, error: "Nothing saved yet — fill in the details first.", reauth: null };
+  }
 
   try {
     const result = await provisionWedding(wedding.id);
@@ -173,7 +176,22 @@ export async function buildWedding(): Promise<BuildResult> {
       publicUrl: wedding.customDomain ?? `ribbet.app/${wedding.slug}`,
     };
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    return { ok: false, error: message };
+    // A scope or token problem isn't something the couple can retry their way
+    // out of — the intake turns this into another trip through Google consent.
+    const reauth = reauthReasonFor(error);
+    return { ok: false, error: reauthMessage(reauth, error), reauth };
+  }
+}
+
+function reauthMessage(reason: ReauthReason | null, error: unknown): string {
+  switch (reason) {
+    case "missing_scope":
+    case "insufficient_scope":
+      return "Ribbet doesn't have permission to create files in your Drive — the Drive tick box was left unticked when you signed in.";
+    case "invalid_grant":
+    case "no_token":
+      return "Your Google connection has expired.";
+    default:
+      return error instanceof Error ? error.message : String(error);
   }
 }

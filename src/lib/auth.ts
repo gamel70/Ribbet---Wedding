@@ -16,12 +16,27 @@ import { encryptToken } from "@/lib/crypto";
  * `drive`, `drive.readonly` or `spreadsheets` breaks both the onboarding promise
  * made on intake screen 01 and the verification timeline.
  */
-export const GOOGLE_SCOPES = [
-  "openid",
-  "email",
-  "profile",
-  "https://www.googleapis.com/auth/drive.file",
-] as const;
+export const DRIVE_FILE_SCOPE = "https://www.googleapis.com/auth/drive.file";
+
+export const GOOGLE_SCOPES = ["openid", "email", "profile", DRIVE_FILE_SCOPE] as const;
+
+/**
+ * Whether a granted-scope string actually carries drive.file.
+ *
+ * Asking for a scope is not the same as being given it: Google's consent screen
+ * shows non-required scopes as tick boxes, and a couple who leaves the Drive box
+ * unticked signs in perfectly happily with a token that cannot create a single
+ * file. That token then fails at "Create it" with "Request had insufficient
+ * authentication scopes", which is far too late to find out — so this is checked
+ * before provisioning starts, and the couple is sent back to re-consent.
+ *
+ * A null/empty scope means the row predates scope recording; treat that as
+ * unknown rather than missing and let the API call be the judge.
+ */
+export function hasDriveFileScope(scope: string | null | undefined): boolean | null {
+  if (!scope) return null;
+  return scope.split(/\s+/).includes(DRIVE_FILE_SCOPE);
+}
 
 export const authOptions: NextAuthOptions = {
   providers: [

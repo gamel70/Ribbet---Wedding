@@ -148,6 +148,8 @@ export async function provisionWedding(weddingId: string): Promise<ProvisionResu
   let step = wedding.provisioningStep;
   let folderId = wedding.driveFolderId;
   let sheetId = wedding.sheetId;
+  /** Tab ids from the create call, so the common path skips a follow-up get. */
+  let tabIds: Map<string, number> | null = null;
 
   const fail = async (error: unknown) => {
     const message = error instanceof Error ? error.message : String(error);
@@ -193,6 +195,7 @@ export async function provisionWedding(weddingId: string): Promise<ProvisionResu
         fields: "spreadsheetId,sheets(properties(sheetId,title))",
       });
       sheetId = created.data.spreadsheetId!;
+      tabIds = indexTabs(created.data.sheets);
       step = PROVISION_STEPS.SHEET_CREATED;
       await db
         .update(weddings)
@@ -202,16 +205,17 @@ export async function provisionWedding(weddingId: string): Promise<ProvisionResu
 
     // 3. One batchUpdate carrying every formatting request together.
     if (step < PROVISION_STEPS.SHEET_FORMATTED) {
-      const meta = await sheets.spreadsheets.get({
-        spreadsheetId: sheetId,
-        fields: "sheets(properties(sheetId,title))",
-      });
-      const idByTitle = new Map<string, number>();
-      for (const s of meta.data.sheets ?? []) {
-        if (s.properties?.title != null && s.properties.sheetId != null) {
-          idByTitle.set(s.properties.title, s.properties.sheetId);
-        }
-      }
+      // Only re-read the workbook when resuming a job that created it earlier.
+      const idByTitle =
+        tabIds ??
+        indexTabs(
+          (
+            await sheets.spreadsheets.get({
+              spreadsheetId: sheetId,
+              fields: "sheets(properties(sheetId,title))",
+            })
+          ).data.sheets,
+        );
 
       const ownerEmail = await ownerEmailFor(googleSub);
       const requests: sheets_v4.Schema$Request[] = [];
@@ -367,6 +371,16 @@ export async function provisionWedding(weddingId: string): Promise<ProvisionResu
     await fail(error);
     throw error;
   }
+}
+
+function indexTabs(sheets: sheets_v4.Schema$Sheet[] | undefined): Map<string, number> {
+  const byTitle = new Map<string, number>();
+  for (const s of sheets ?? []) {
+    if (s.properties?.title != null && s.properties.sheetId != null) {
+      byTitle.set(s.properties.title, s.properties.sheetId);
+    }
+  }
+  return byTitle;
 }
 
 async function ownerEmailFor(googleSub: string): Promise<string | null> {

@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 
 import { authOptions } from "@/lib/auth";
 import { formatDateText } from "@/lib/dates";
+import { googleGrantFor } from "@/lib/google";
 import { resolveSections } from "@/lib/design";
 import { masterSheetName, PROVISION_STEPS, vaultFolderName } from "@/lib/provision";
 import { autoSlug } from "@/lib/slug";
@@ -21,6 +22,12 @@ export default async function SetupPage() {
   const googleSub = session?.user?.googleSub ?? null;
   const wedding = googleSub ? await findWedding(googleSub) : null;
 
+  // Signing in and granting Drive access are two different things: Google shows
+  // drive.file as a tick box the couple can leave unticked. Check it here so
+  // step 1 can say so, rather than letting them find out at "Create it".
+  const grant = googleSub ? await googleGrantFor(googleSub) : null;
+  const driveConnected = grant ? grant.hasToken && grant.driveFile !== false : false;
+
   const nameOne = wedding?.nameOne ?? "";
   const nameTwo = wedding?.nameTwo ?? "";
   const slug = wedding?.slug ?? "";
@@ -33,6 +40,7 @@ export default async function SetupPage() {
 
   const initial: WizardInitial = {
     signedIn: Boolean(googleSub),
+    driveConnected,
     account: session?.user ? { name: session.user.name ?? null, email: session.user.email ?? null } : null,
     step: googleSub ? (wedding?.intakeStep ?? 1) : 1,
     nameOne,

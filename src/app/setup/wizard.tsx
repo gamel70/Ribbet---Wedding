@@ -33,6 +33,8 @@ import { PreviewPhone } from "./preview-phone";
 
 export type WizardInitial = {
   signedIn: boolean;
+  /** Signed in AND the drive.file tick box was actually ticked. */
+  driveConnected: boolean;
   account: { name: string | null; email: string | null } | null;
   step: number;
   nameOne: string;
@@ -115,9 +117,11 @@ export function IntakeWizard({ initial }: { initial: WizardInitial }) {
 
   const [slugVerdict, setSlugVerdict] = useState<SlugCheckResult | null>(null);
   const [copied, setCopied] = useState(false);
+  const [reconnecting, setReconnecting] = useState(false);
   const [, startSaving] = useTransition();
 
   const signedIn = initial.signedIn;
+  const driveConnected = initial.driveConnected;
 
   // ---- derived values, mirroring renderVals() in the design file ----------
 
@@ -237,6 +241,16 @@ export function IntakeWizard({ initial }: { initial: WizardInitial }) {
     setOn((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
+  /**
+   * Re-runs Google sign-in. `prompt: consent` is already set on the provider, so
+   * the couple gets the permission screen again rather than being waved straight
+   * through with the same insufficient grant.
+   */
+  const reconnectGoogle = useCallback(() => {
+    setReconnecting(true);
+    signIn("google", { callbackUrl: "/setup" });
+  }, []);
+
   const runBuild = async () => {
     setBuilding(true);
     setBuildError(null);
@@ -252,6 +266,11 @@ export function IntakeWizard({ initial }: { initial: WizardInitial }) {
         setSheetUrl(result.result.sheetUrl);
         setFolderName(result.result.folderName);
         setFolderUrl(result.result.folderUrl);
+      } else if (result.reauth) {
+        // Nothing they can retry their way out of — send them back to Google.
+        setBuildError(result.error);
+        reconnectGoogle();
+        return;
       } else {
         setBuildError(result.error);
       }
@@ -496,7 +515,15 @@ export function IntakeWizard({ initial }: { initial: WizardInitial }) {
                   </>
                 ) : (
                   <>
-                    <div style={{ ...pane, marginTop: 30, border: `2px solid ${GOOGLE_GREEN}`, padding: 18, maxWidth: 560 }}>
+                    <div
+                      style={{
+                        ...pane,
+                        marginTop: 30,
+                        border: `2px solid ${driveConnected ? GOOGLE_GREEN : ERROR}`,
+                        padding: 18,
+                        maxWidth: 560,
+                      }}
+                    >
                       <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
                         <div
                           style={{
@@ -517,24 +544,61 @@ export function IntakeWizard({ initial }: { initial: WizardInitial }) {
                         <div style={{ flex: 1 }}>
                           <div style={{ fontSize: 14, fontWeight: 800 }}>{initial.account?.email}</div>
                           <div style={{ fontSize: 12, opacity: 0.6, marginTop: 2 }}>
-                            Connected · Ribbet can now build in your Drive
+                            {driveConnected
+                              ? "Connected · Ribbet can now build in your Drive"
+                              : "Signed in — but Drive access wasn't granted"}
                           </div>
                         </div>
-                        <div style={{ fontSize: 12, color: GOOGLE_GREEN, fontWeight: 800 }}>✓</div>
+                        <div
+                          style={{ fontSize: 12, color: driveConnected ? GOOGLE_GREEN : ERROR, fontWeight: 800 }}
+                        >
+                          {driveConnected ? "✓" : "!"}
+                        </div>
                       </div>
-                      <div
-                        style={{
-                          marginTop: 14,
-                          paddingTop: 14,
-                          borderTop: `1px solid ${RULE}`,
-                          fontSize: 12,
-                          lineHeight: 1.6,
-                          opacity: 0.7,
-                        }}
-                      >
-                        {n2 || "Your partner"} can be added as a second owner later — same Drive folder, same Sheet,
-                        both of you edit.
-                      </div>
+
+                      {driveConnected ? (
+                        <div
+                          style={{
+                            marginTop: 14,
+                            paddingTop: 14,
+                            borderTop: `1px solid ${RULE}`,
+                            fontSize: 12,
+                            lineHeight: 1.6,
+                            opacity: 0.7,
+                          }}
+                        >
+                          {n2 || "Your partner"} can be added as a second owner later — same Drive folder, same Sheet,
+                          both of you edit.
+                        </div>
+                      ) : (
+                        <div style={{ marginTop: 14, paddingTop: 14, borderTop: `1px solid ${RULE}` }}>
+                          <div style={{ fontSize: 12, lineHeight: 1.6 }}>
+                            Google shows the Drive permission as a tick box, and it came back unticked — so Ribbet
+                            can&apos;t create your folder or your Sheet yet. Sign in again and{" "}
+                            <strong>tick the box about files you use with this app</strong>.
+                          </div>
+                          <button
+                            type="button"
+                            onClick={reconnectGoogle}
+                            disabled={reconnecting}
+                            style={{
+                              marginTop: 14,
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 12,
+                              padding: "12px 18px",
+                              background: "#fff",
+                              border: `2px solid ${INK}`,
+                              cursor: reconnecting ? "progress" : "pointer",
+                            }}
+                          >
+                            <GoogleMark />
+                            <span style={{ fontSize: 14, fontWeight: 800 }}>
+                              {reconnecting ? "Opening Google…" : "Reconnect Google"}
+                            </span>
+                          </button>
+                        </div>
+                      )}
                     </div>
                     <button type="button" onClick={next} style={cta}>
                       Continue to the details →
@@ -1062,6 +1126,47 @@ export function IntakeWizard({ initial }: { initial: WizardInitial }) {
                   </div>
                 ) : null}
 
+                {!built && !driveConnected ? (
+                  <div
+                    style={{
+                      marginTop: 20,
+                      maxWidth: 600,
+                      border: `2px solid ${ERROR}`,
+                      padding: 18,
+                      animation: "rbIn .25s ease both",
+                    }}
+                  >
+                    <div style={{ fontSize: 13, fontWeight: 800, color: ERROR }}>
+                      Ribbet can&apos;t write to your Drive yet
+                    </div>
+                    <div style={{ marginTop: 6, fontSize: 12.5, lineHeight: 1.6, opacity: 0.8 }}>
+                      You&apos;re signed in, but the Drive permission came back unticked, so there&apos;s nothing to
+                      create the folder or the Sheet with. One more trip through Google fixes it —{" "}
+                      <strong>tick the box about files you use with this app</strong>, and you&apos;ll land back here.
+                    </div>
+                    <button
+                      type="button"
+                      onClick={reconnectGoogle}
+                      disabled={reconnecting}
+                      style={{
+                        marginTop: 14,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 12,
+                        padding: "12px 18px",
+                        background: "#fff",
+                        border: `2px solid ${INK}`,
+                        cursor: reconnecting ? "progress" : "pointer",
+                      }}
+                    >
+                      <GoogleMark />
+                      <span style={{ fontSize: 14, fontWeight: 800 }}>
+                        {reconnecting ? "Opening Google…" : "Reconnect Google"}
+                      </span>
+                    </button>
+                  </div>
+                ) : null}
+
                 {built ? (
                   <div style={{ marginTop: 26, maxWidth: 600, animation: "rbIn .3s ease both" }}>
                     <div style={{ border: `2px solid ${INK}`, padding: 20 }}>
@@ -1143,7 +1248,7 @@ export function IntakeWizard({ initial }: { initial: WizardInitial }) {
                       </div>
                     </div>
                   </div>
-                ) : (
+                ) : driveConnected ? (
                   <button
                     type="button"
                     onClick={runBuild}
@@ -1152,7 +1257,7 @@ export function IntakeWizard({ initial }: { initial: WizardInitial }) {
                   >
                     {building ? "Creating…" : "Create it →"}
                   </button>
-                )}
+                ) : null}
               </div>
             )}
           </div>
