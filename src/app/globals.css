@@ -1,26 +1,55 @@
 @import "tailwindcss";
 
+/*
+ * Chrome tokens from the "Design Tokens" section of README.md. The intake and
+ * the guest app both paint their own surfaces, so these are only the defaults
+ * behind them.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #e6e4e2;
+  --foreground: #201e1d;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-sans: var(--font-karla);
+  --font-serif: var(--font-fraunces);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-karla), sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* The design's entrance animation: opacity 0→1 plus an 8px lift, 250ms ease. */
+@keyframes rbIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* The intake card scrolls internally with no visible scrollbar. */
+.rb {
+  scrollbar-width: none;
+}
+
+.rb::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+a {
+  color: #b98d4f;
+}
+
+a:hover {
+  color: #96703a;
 }

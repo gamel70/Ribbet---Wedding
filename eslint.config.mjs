@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // The design bundle's own runtime. It renders the .dc.html references and
+    // is not part of the app — README.md says read those files, don't port them.
+    "support.js",
   ]),
 ]);
 

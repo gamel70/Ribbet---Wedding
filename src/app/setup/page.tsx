@@ -1,44 +1,61 @@
 import { getServerSession } from "next-auth";
 
 import { authOptions } from "@/lib/auth";
+import { formatDateText } from "@/lib/dates";
+import { resolveSections } from "@/lib/design";
+import { masterSheetName, PROVISION_STEPS, vaultFolderName } from "@/lib/provision";
+import { autoSlug } from "@/lib/slug";
+import { findWedding } from "@/lib/wedding";
 
-import { GoogleSignIn, SignOut } from "./sign-in";
+import { IntakeWizard, type WizardInitial } from "./wizard";
 
 /**
- * Step 1 of the intake wizard, reduced to the Google grant so the scope and the
- * encrypted-token round trip can be tested end to end. The full five-step wizard
- * (live phone preview, storage meter, domain picker) is the next build step —
- * see "Stage 2+3 — Intake wizard" in README.md.
+ * Stage 2+3 — the intake wizard from `Ribbet Intake.dc.html`.
+ *
+ * The step lock is enforced here as well as in the UI: with no session the
+ * wizard is handed `signedIn: false` and pinned to step 1, and every Server
+ * Action it calls re-checks the session independently.
  */
 export default async function SetupPage() {
   const session = await getServerSession(authOptions);
+  const googleSub = session?.user?.googleSub ?? null;
+  const wedding = googleSub ? await findWedding(googleSub) : null;
 
-  return (
-    <main className="flex flex-1 items-center justify-center bg-[#e6e4e2] p-6">
-      <div className="w-full max-w-[560px] border-2 border-[#201e1d] bg-white p-10 shadow-[0_24px_60px_rgba(0,0,0,.18)]">
-        <p className="text-[10px] font-extrabold uppercase tracking-[.28em] text-[#8a8378]">Step 1 of 5</p>
-        <h1 className="mt-3 font-[family-name:var(--font-fraunces)] text-[38px] leading-tight text-[#201e1d]">
-          Connect your Google account
-        </h1>
+  const nameOne = wedding?.nameOne ?? "";
+  const nameTwo = wedding?.nameTwo ?? "";
+  const slug = wedding?.slug ?? "";
+  const provisioned = (wedding?.provisioningStep ?? 0) >= PROVISION_STEPS.DONE;
 
-        <p className="mt-5 text-[14px] leading-[1.65] text-[#3d3a37]">
-          Ribbet creates one folder and one spreadsheet in your Drive, and can only ever see the
-          files it made itself. It cannot read anything else in your Drive.
-        </p>
+  // `null` means "still deriving from the names", which is how the design keeps
+  // the address in step with what the couple is typing.
+  const derived = autoSlug(nameOne, nameTwo);
+  const bareDomain = wedding?.customDomain?.replace(/\.com$/i, "") ?? null;
 
-        {session?.user ? (
-          <div className="mt-8 border-2 border-[#0f9d58] p-5">
-            <p className="text-[13px] font-extrabold text-[#201e1d]">{session.user.name}</p>
-            <p className="mt-1 text-[13px] text-[#5f6368]">{session.user.email}</p>
-            <p className="mt-3 text-[12px] text-[#0f9d58]">
-              Connected. Refresh token stored, encrypted.
-            </p>
-            <SignOut />
-          </div>
-        ) : (
-          <GoogleSignIn />
-        )}
-      </div>
-    </main>
-  );
+  const initial: WizardInitial = {
+    signedIn: Boolean(googleSub),
+    account: session?.user ? { name: session.user.name ?? null, email: session.user.email ?? null } : null,
+    step: googleSub ? (wedding?.intakeStep ?? 1) : 1,
+    nameOne,
+    nameTwo,
+    dateText: wedding?.date ? formatDateText(wedding.date) : "",
+    venue: wedding?.venue ?? "",
+    guestCount: wedding?.guestEstimate != null ? String(wedding.guestEstimate) : "",
+    // With no names yet the stored slug is only a placeholder, so the address
+    // stays in "deriving from the names" mode rather than pinning to it.
+    slugOverride: wedding && nameOne && slug !== derived ? slug : null,
+    domainOverride: bareDomain,
+    domainMode: wedding ? (wedding.customDomain ? "own" : "free") : "own",
+    layout: wedding?.layout ?? "botanical",
+    palette: wedding?.palette ?? "brass",
+    accent: wedding?.accent ?? null,
+    sections: resolveSections(wedding?.sections),
+    built: provisioned,
+    publicUrl: wedding ? (wedding.customDomain ?? `ribbet.app/${slug}`) : null,
+    sheetName: provisioned && wedding ? masterSheetName(wedding) : null,
+    sheetUrl: wedding?.sheetId ? `https://docs.google.com/spreadsheets/d/${wedding.sheetId}/edit` : null,
+    folderName: provisioned && wedding ? vaultFolderName(wedding) : null,
+    folderUrl: wedding?.driveFolderId ? `https://drive.google.com/drive/folders/${wedding.driveFolderId}` : null,
+  };
+
+  return <IntakeWizard initial={initial} />;
 }
