@@ -40,6 +40,10 @@ export default async function SectionScreen({ params }: PageProps<"/[slug]/more/
   // URL doesn't resolve either.
   if (!sections[meta.key]) notFound();
 
+  // A rename in the console retitles the screen; left alone, each screen keeps
+  // the heading the design gave it ("Dinner", "Who's who").
+  const renamed = wedding.sectionMeta?.[meta.key]?.label?.trim() || undefined;
+
   return (
     <>
       <Link
@@ -49,14 +53,14 @@ export default async function SectionScreen({ params }: PageProps<"/[slug]/more/
         ← More
       </Link>
       <div style={{ marginTop: 12 }}>
-        {meta.key === "gifts" ? <Gifts /> : null}
-        {meta.key === "travel" ? <Travel /> : null}
-        {meta.key === "menu" ? <Menu /> : null}
-        {meta.key === "guestbook" ? <Guestbook slug={slug} weddingId={wedding.id} /> : null}
-        {meta.key === "songs" ? <Songs slug={slug} weddingId={wedding.id} /> : null}
-        {meta.key === "party" ? <Party /> : null}
-        {meta.key === "around" ? <AroundTown wedding={wedding} /> : null}
-        {meta.key === "faq" ? <Faq /> : null}
+        {meta.key === "gifts" ? <Gifts title={renamed} /> : null}
+        {meta.key === "travel" ? <Travel title={renamed} /> : null}
+        {meta.key === "menu" ? <Menu title={renamed} /> : null}
+        {meta.key === "guestbook" ? <Guestbook slug={slug} weddingId={wedding.id} title={renamed} /> : null}
+        {meta.key === "songs" ? <Songs slug={slug} weddingId={wedding.id} title={renamed} /> : null}
+        {meta.key === "party" ? <Party title={renamed} /> : null}
+        {meta.key === "around" ? <AroundTown wedding={wedding} title={renamed} /> : null}
+        {meta.key === "faq" ? <Faq title={renamed} /> : null}
       </div>
     </>
   );
@@ -68,10 +72,10 @@ function money(cents: number): string {
   return `$${(cents / 100).toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
 }
 
-function Gifts() {
+function Gifts({ title }: { title?: string }) {
   return (
     <>
-      <ScreenTitle>Gifts</ScreenTitle>
+      <ScreenTitle>{title ?? "Gifts"}</ScreenTitle>
       <Lede>
         Pledge here, pay how you like — Venmo or Zelle links open directly. No money moves through this app.
       </Lede>
@@ -127,10 +131,10 @@ function Gifts() {
 
 // ---------------------------------------------------------------- screen 07 --
 
-function Travel() {
+function Travel({ title }: { title?: string }) {
   return (
     <>
-      <ScreenTitle>Travel &amp; stay</ScreenTitle>
+      <ScreenTitle>{title ?? "Travel & stay"}</ScreenTitle>
 
       <Eyebrow style={{ marginTop: 16 }}>Room blocks</Eyebrow>
       <div style={{ marginTop: 9, display: "flex", flexDirection: "column", gap: 8 }}>
@@ -158,10 +162,10 @@ function Travel() {
 
 // ---------------------------------------------------------------- screen 08 --
 
-function Menu() {
+function Menu({ title }: { title?: string }) {
   return (
     <>
-      <ScreenTitle>Dinner</ScreenTitle>
+      <ScreenTitle>{title ?? "Dinner"}</ScreenTitle>
       <Lede>Family-style starters, then your pick — chosen in RSVP, changeable until the week before.</Lede>
 
       <Eyebrow style={{ marginTop: 18 }}>To start, shared</Eyebrow>
@@ -192,7 +196,7 @@ function Menu() {
 
 // ---------------------------------------------------------------- screen 09 --
 
-async function Guestbook({ slug, weddingId }: { slug: string; weddingId: string }) {
+async function Guestbook({ slug, weddingId, title }: { slug: string; weddingId: string; title?: string }) {
   const notes = await db
     .select()
     .from(guestbookNotes)
@@ -202,7 +206,7 @@ async function Guestbook({ slug, weddingId }: { slug: string; weddingId: string 
 
   return (
     <>
-      <ScreenTitle>Guestbook</ScreenTitle>
+      <ScreenTitle>{title ?? "Guestbook"}</ScreenTitle>
       <Lede>Notes post to the wall right away; the couple can take any down.</Lede>
 
       {notes.length ? (
@@ -230,7 +234,7 @@ async function Guestbook({ slug, weddingId }: { slug: string; weddingId: string 
   );
 }
 
-async function Songs({ slug, weddingId }: { slug: string; weddingId: string }) {
+async function Songs({ slug, weddingId, title }: { slug: string; weddingId: string; title?: string }) {
   const household = await currentHousehold(weddingId);
 
   const mine = household
@@ -247,7 +251,7 @@ async function Songs({ slug, weddingId }: { slug: string; weddingId: string }) {
 
   return (
     <>
-      <SubTitle>Songs for the DJ</SubTitle>
+      <SubTitle>{title ?? "Songs for the DJ"}</SubTitle>
       <Lede>One request each — it lands on the couple&apos;s DJ list.</Lede>
 
       {mine ? (
@@ -280,10 +284,10 @@ async function Songs({ slug, weddingId }: { slug: string; weddingId: string }) {
 
 // ---------------------------------------------------------------- screen 10 --
 
-function Party() {
+function Party({ title }: { title?: string }) {
   return (
     <>
-      <ScreenTitle>Who&apos;s who</ScreenTitle>
+      <ScreenTitle>{title ?? "Who’s who"}</ScreenTitle>
       <div style={{ marginTop: 14, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
         {WEDDING_PARTY.map((person) => (
           <Panel key={person.name} style={{ padding: 13 }}>
@@ -305,10 +309,10 @@ function Party() {
   );
 }
 
-function Faq() {
+function Faq({ title }: { title?: string }) {
   return (
     <>
-      <ScreenTitle>FAQ</ScreenTitle>
+      <ScreenTitle>{title ?? "FAQ"}</ScreenTitle>
       <div style={{ marginTop: 12, display: "flex", flexDirection: "column" }}>
         {FAQ.map((row, i) => (
           <div
@@ -326,7 +330,7 @@ function Faq() {
 
 // ---------------------------------------------------------------- screen 11 --
 
-async function AroundTown({ wedding }: { wedding: WeddingRow }) {
+async function AroundTown({ wedding, title }: { wedding: WeddingRow; title?: string }) {
   // The couple writes this one into the Sheet's Things to do tab; pull whatever
   // is there now before rendering, throttled so it isn't a read per request.
   try {
@@ -343,7 +347,7 @@ async function AroundTown({ wedding }: { wedding: WeddingRow }) {
 
   return (
     <>
-      <ScreenTitle>Around town</ScreenTitle>
+      <ScreenTitle>{title ?? "Around town"}</ScreenTitle>
       <Lede>
         The couple&apos;s actual list — where they eat, drink and take people. Written by them, not an algorithm.
       </Lede>

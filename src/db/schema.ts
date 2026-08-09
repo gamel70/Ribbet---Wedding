@@ -45,6 +45,17 @@ export type Layout = "botanical" | "classic" | "romantic";
 export type Palette = "brass" | "terracotta" | "sage" | "ink" | "plum" | "rust";
 
 /**
+ * Per-section overrides from the couple console: a renamed label and a position.
+ * Absent keys fall back to the design's own label and order, so an untouched
+ * wedding behaves exactly as it did before the console existed.
+ */
+export type SectionMeta = { label?: string; order?: number };
+export type SectionMetaMap = Partial<Record<SectionKey, SectionMeta>>;
+
+/** One row of The Day. `time` is 24-hour "HH:MM"; the app renders it 12-hour. */
+export type ScheduleEntry = { time: string; title: string; detail: string };
+
+/**
  * The couple's Google identity and their encrypted refresh token.
  *
  * `refreshTokenEncrypted` is AES-256-GCM ciphertext produced by src/lib/crypto.ts.
@@ -89,6 +100,10 @@ export const weddings = pgTable(
     /** null = use the palette's own accent. */
     accent: text("accent"),
     sections: jsonb("sections").$type<Partial<Sections>>().notNull().default({}),
+    /** Console overrides for section names and running order. */
+    sectionMeta: jsonb("section_meta").$type<SectionMetaMap>().notNull().default({}),
+    /** The Day, editable in the console. Empty means "use the default running order". */
+    schedule: jsonb("schedule").$type<ScheduleEntry[]>().notNull().default([]),
     partnerEmail: text("partner_email"),
     customDomain: text("custom_domain"),
 

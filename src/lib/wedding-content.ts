@@ -1,59 +1,17 @@
 /**
  * Content the guest app shows that the couple has no editor for yet.
  *
- * The schedule, the menu, the room blocks, the wedding party and the FAQ are all
- * hard-coded in `Ribbet App Structure.dc.html`, and there is no intake field and
- * no Sheet tab that feeds them — so these are the design's own values, kept in
- * one place rather than scattered through the screens. When a couple-side editor
- * lands, this file is what it replaces.
+ * The menu, the room blocks, the wedding party and the FAQ are hard-coded in
+ * `Ribbet App Structure.dc.html`, and there is no intake field and no Sheet tab
+ * that feeds them — so these are the design's own values, kept in one place
+ * rather than scattered through the screens. When a couple-side editor lands,
+ * this file is what it replaces.
  *
- * Around town and the DJ list are deliberately NOT here: those are real data,
- * fed by the Sheet and by guests.
+ * The schedule used to live here and now doesn't: the console edits it, so it
+ * moved to src/lib/schedule.ts and onto the wedding row. Around town and the DJ
+ * list were never here either — those are real data, fed by the Sheet and by
+ * guests.
  */
-
-export type ScheduleEntry = { time: string; minutes: number; title: string; detail: string };
-
-/** Minutes from midnight, so "now" can be worked out on the day itself. */
-export const SCHEDULE: ScheduleEntry[] = [
-  { time: "4:15", minutes: 16 * 60 + 15, title: "Doors open", detail: "Rooftop elevator, 12th fl" },
-  { time: "5:00", minutes: 17 * 60, title: "Ceremony", detail: "West terrace — phones away" },
-  { time: "5:45", minutes: 17 * 60 + 45, title: "Golden-hour drinks", detail: "East rail · signature spritz" },
-  { time: "7:00", minutes: 19 * 60, title: "Dinner", detail: "Long tables, under the lights" },
-  { time: "8:45", minutes: 20 * 60 + 45, title: "Toasts", detail: "Elle has the mic first" },
-  { time: "9:30", minutes: 21 * 60 + 30, title: "Dancing", detail: "Till they kick us out" },
-];
-
-export type ScheduleState = "done" | "now" | "next" | "later";
-
-/**
- * Marks each row done / now / next against the clock. Before the wedding day
- * everything reads "later"; after it, everything reads "done".
- */
-export function scheduleStates(weddingDate: Date | null, now: Date): ScheduleState[] {
-  if (!weddingDate) return SCHEDULE.map(() => "later");
-
-  const day = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-  const weddingDay = day(new Date(weddingDate.getTime() + weddingDate.getTimezoneOffset() * 60_000));
-  const today = day(now);
-
-  if (today !== weddingDay) {
-    const past = now.getTime() > weddingDate.getTime();
-    return SCHEDULE.map(() => (past ? "done" : "later"));
-  }
-
-  const minutesNow = now.getHours() * 60 + now.getMinutes();
-  const currentIndex = SCHEDULE.reduce(
-    (found, entry, i) => (minutesNow >= entry.minutes ? i : found),
-    -1,
-  );
-
-  return SCHEDULE.map((_, i) => {
-    if (i < currentIndex) return "done";
-    if (i === currentIndex) return "now";
-    if (i === currentIndex + 1) return "next";
-    return "later";
-  });
-}
 
 export const MAINS = [
   { key: "striploin", label: "Striploin, salsa verde", note: "Medium unless you say otherwise" },

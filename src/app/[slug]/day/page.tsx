@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation";
 
 import { currentHousehold, householdGuests, weddingBySlug } from "@/lib/guest";
-import { DAY_NOTE, SCHEDULE, scheduleStates } from "@/lib/wedding-content";
+import { displayTime, resolveSchedule, scheduleStates } from "@/lib/schedule";
+import { sectionLabel } from "@/lib/sections";
+import { DAY_NOTE } from "@/lib/wedding-content";
 
 import { Lede, ScreenTitle } from "../ui";
 
@@ -14,7 +16,8 @@ export default async function DayScreen({ params }: PageProps<"/[slug]/day">) {
   const wedding = await weddingBySlug(slug);
   if (!wedding) notFound();
 
-  const states = scheduleStates(wedding.date, new Date());
+  const schedule = resolveSchedule(wedding.schedule);
+  const states = scheduleStates(schedule, wedding.date, new Date());
 
   const household = await currentHousehold(wedding.id);
   const people = household ? await householdGuests(household.id) : [];
@@ -22,27 +25,29 @@ export default async function DayScreen({ params }: PageProps<"/[slug]/day">) {
 
   return (
     <>
-      <ScreenTitle>The Day</ScreenTitle>
+      <ScreenTitle>{sectionLabel("day", wedding.sectionMeta)}</ScreenTitle>
       <Lede>{DAY_NOTE}</Lede>
 
       <div style={{ marginTop: 16, display: "flex", flexDirection: "column" }}>
-        {SCHEDULE.map((entry, i) => {
+        {schedule.map((entry, i) => {
           const state = states[i];
           const isNow = state === "now";
           return (
             <div
-              key={entry.title}
+              key={`${entry.time}-${entry.title}`}
               style={{
                 display: "flex",
                 gap: 13,
                 padding: isNow ? "13px 12px" : "13px 0",
-                borderBottom: i === SCHEDULE.length - 1 ? "none" : "1px solid var(--line)",
+                borderBottom: i === schedule.length - 1 ? "none" : "1px solid var(--line)",
                 opacity: state === "done" ? 0.45 : 1,
                 background: isNow ? "var(--panel)" : "transparent",
                 borderLeft: isNow ? "3px solid var(--acc)" : undefined,
               }}
             >
-              <div style={{ width: 52, flex: "none", fontFamily: "var(--serif)", fontSize: 15 }}>{entry.time}</div>
+              <div style={{ width: 52, flex: "none", fontFamily: "var(--serif)", fontSize: 15 }}>
+                {displayTime(entry.time)}
+              </div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: 14, fontWeight: 700 }}>{entry.title}</div>
                 <div style={{ fontSize: 11, color: "var(--mut)", marginTop: 1 }}>{entry.detail}</div>
