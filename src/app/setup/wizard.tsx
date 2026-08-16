@@ -108,6 +108,15 @@ export function IntakeWizard({ initial }: { initial: WizardInitial }) {
   const [on, setOn] = useState<Sections>(initial.sections);
 
   const [built, setBuilt] = useState(initial.built);
+
+  // Fresh back from Google with the grant in hand: the only way to arrive
+  // signed in while still on step 1 is the OAuth redirect that just finished.
+  // Show the green card long enough to read, then walk on to the details
+  // unprompted — the sign-in is the step, not a stop.
+  const [autoAdvancing, setAutoAdvancing] = useState(
+    () => initial.signedIn && initial.driveConnected && initial.step === 1 && !initial.built,
+  );
+
   const [building, setBuilding] = useState(false);
   const [buildError, setBuildError] = useState<string | null>(null);
   const [publicUrl, setPublicUrl] = useState(initial.publicUrl);
@@ -232,10 +241,25 @@ export function IntakeWizard({ initial }: { initial: WizardInitial }) {
   const reachable = useCallback((n: number) => n === 1 || signedIn, [signedIn]);
 
   const go = (n: number) => {
-    if (reachable(n)) setStep(n);
+    if (!reachable(n)) return;
+    // Any deliberate navigation outranks the automatic walk-on.
+    setAutoAdvancing(false);
+    setStep(n);
   };
 
-  const next = () => setStep((s) => Math.min(5, s + 1));
+  const next = () => {
+    setAutoAdvancing(false);
+    setStep((s) => Math.min(5, s + 1));
+  };
+
+  useEffect(() => {
+    if (!autoAdvancing) return;
+    const timer = setTimeout(() => {
+      setAutoAdvancing(false);
+      setStep(2);
+    }, 1600);
+    return () => clearTimeout(timer);
+  }, [autoAdvancing]);
 
   const toggleSection = (key: SectionKey, locked: boolean) => {
     if (locked) return;
@@ -513,8 +537,9 @@ export function IntakeWizard({ initial }: { initial: WizardInitial }) {
                       <span style={{ fontSize: 15, fontWeight: 800 }}>Sign in with Google</span>
                     </button>
                     <div style={{ marginTop: 14, fontSize: 12, lineHeight: 1.6, opacity: 0.6, maxWidth: 560 }}>
-                      Signing in also tells us your name and email, so we know where to send the link. That&apos;s the
-                      whole ask.
+                      A Google account is required — your folder and spreadsheet are built inside its Drive. Signing
+                      in also tells us your name and email, so we know where to send the link. That&apos;s the whole
+                      ask.
                     </div>
                   </>
                 ) : (
@@ -604,6 +629,19 @@ export function IntakeWizard({ initial }: { initial: WizardInitial }) {
                         </div>
                       )}
                     </div>
+                    {autoAdvancing && driveConnected ? (
+                      <div
+                        style={{
+                          marginTop: 16,
+                          fontSize: 12.5,
+                          fontWeight: 800,
+                          color: GOOGLE_GREEN,
+                          animation: "rbIn .25s ease both",
+                        }}
+                      >
+                        ✓ Connected — taking you to the details…
+                      </div>
+                    ) : null}
                     <button type="button" onClick={next} style={cta}>
                       Continue to the details →
                     </button>
