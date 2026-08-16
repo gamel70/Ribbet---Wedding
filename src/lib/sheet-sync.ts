@@ -24,6 +24,13 @@ const TAB = {
   places: "Things to do",
 } as const;
 
+/**
+ * What a synced cell may hold. Booleans land in checkbox-validated columns
+ * (Caterer's Kid), numbers in count columns — writing real types is what keeps
+ * the couple's Sheet looking like a spreadsheet instead of a text dump.
+ */
+type CellValue = string | number | boolean;
+
 /** A1 range covering a whole tab's data area, quoted for the tab's spaces/&. */
 function range(tab: string, span: string): string {
   return `'${tab.replace(/'/g, "''")}'!${span}`;
@@ -69,19 +76,19 @@ export async function pushHouseholdToSheet(wedding: WeddingRow, householdId: str
   const [reply] = await db.select().from(rsvps).where(eq(rsvps.householdId, householdId)).limit(1);
 
   const kids = people.filter((p) => p.isChild).length;
-  const row = [
+  const row: CellValue[] = [
     household.label,
     people.map((p) => p.name).join(", "),
     formatDate(household.inviteSentAt) || "app",
     formatDate(household.openedAt) || formatDate(new Date()),
     reply?.reply === "yes" ? "Coming" : reply?.reply === "no" ? "Declined" : "",
-    reply?.attendingCount != null ? String(reply.attendingCount) : "",
-    kids ? String(kids) : "—",
+    reply?.attendingCount != null ? reply.attendingCount : "",
+    kids || "—",
     reply?.note ?? "",
   ];
 
   await upsertByFirstColumn(sheetsApi, wedding.sheetId, TAB.guests, household.label, row, 8);
-  await pushCaterer(sheetsApi, wedding.sheetId, household.label, people);
+  await pushCaterer(sheetsApi, wedding, people);
 }
 
 /**
@@ -93,16 +100,18 @@ async function upsertByFirstColumn(
   spreadsheetId: string,
   tab: string,
   key: string,
-  row: string[],
+  row: CellValue[],
   width: number,
+  /** First row that holds data — 2 normally, 3 on the Caterer tab, whose row 2 is the pinned totals band. */
+  firstDataRow = 2,
 ): Promise<void> {
-  const existing = await readColumn(sheetsApi, spreadsheetId, tab, "A2:A");
+  const existing = await readColumn(sheetsApi, spreadsheetId, tab, `A${firstDataRow}:A`);
   const index = existing.findIndex((r) => (r[0] ?? "").trim() === key.trim());
 
   const lastColumn = String.fromCharCode("A".charCodeAt(0) + width - 1);
 
   if (index >= 0) {
-    const rowNumber = index + 2;
+    const rowNumber = index + firstDataRow;
     await sheetsApi.spreadsheets.values.update({
       spreadsheetId,
       range: range(tab, `A${rowNumber}:${lastColumn}${rowNumber}`),
@@ -114,20 +123,25 @@ async function upsertByFirstColumn(
 
   await sheetsApi.spreadsheets.values.append({
     spreadsheetId,
-    range: range(tab, `A2:${lastColumn}`),
+    range: range(tab, `A${firstDataRow}:${lastColumn}`),
     valueInputOption: "RAW",
     insertDataOption: "INSERT_ROWS",
     requestBody: { values: [row] },
   });
 }
 
-/** One row per guest on the Caterer tab: Guest, Table, Main, Dietary, Kid, Kitchen note. */
+/**
+ * One row per guest on the Caterer tab — Guest, Table, Main, Dietary, Kid,
+ * Kitchen note — plus the pinned totals band on row 2, recomputed from the
+ * whole wedding so the caterer's first glance is always current.
+ */
 async function pushCaterer(
   sheetsApi: Awaited<ReturnType<typeof sheetsFor>>,
-  spreadsheetId: string,
-  _householdLabel: string,
+  wedding: WeddingRow,
   people: Array<typeof guests.$inferSelect>,
 ): Promise<void> {
+  if (!wedding.sheetId) return;
+
   for (const person of people) {
     const [meal] = await db
       .select()
@@ -135,17 +149,70 @@ async function pushCaterer(
       .where(eq(guestMeals.guestId, person.id))
       .limit(1);
 
-    const row = [
+    const row: CellValue[] = [
       person.name,
       person.tableNumber ?? "—",
       meal?.main ?? "—",
       (meal?.dietary ?? []).join(", ") || "—",
-      person.isChild ? "Yes" : "—",
+      person.isChild,
       meal?.kitchenNote ?? "",
     ];
 
-    await upsertByFirstColumn(sheetsApi, spreadsheetId, TAB.caterer, person.name, row, 6);
+    // Row 2 is the totals band, so data starts at 3.
+    await upsertByFirstColumn(sheetsApi, wedding.sheetId, TAB.caterer, person.name, row, 6, 3);
   }
+
+  await pushCatererTotals(sheetsApi, wedding);
+}
+
+/** The totals band: confirmed count, mains breakdown, dietary flags, kids. */
+async function pushCatererTotals(
+  sheetsApi: Awaited<ReturnType<typeof sheetsFor>>,
+  wedding: WeddingRow,
+): Promise<void> {
+  if (!wedding.sheetId) return;
+
+  const all = await db
+    .select({
+      isChild: guests.isChild,
+      main: guestMeals.main,
+      dietary: guestMeals.dietary,
+      reply: rsvps.reply,
+    })
+    .from(guests)
+    .innerJoin(households, eq(guests.householdId, households.id))
+    .leftJoin(guestMeals, eq(guestMeals.guestId, guests.id))
+    .leftJoin(rsvps, eq(rsvps.householdId, households.id))
+    .where(eq(households.weddingId, wedding.id));
+
+  const confirmed = all.filter((r) => r.reply === "yes");
+  const kids = confirmed.filter((r) => r.isChild).length;
+  const withFlags = confirmed.filter((r) => (r.dietary ?? []).length > 0).length;
+
+  const mains = new Map<string, number>();
+  for (const r of confirmed) {
+    if (r.main) mains.set(r.main, (mains.get(r.main) ?? 0) + 1);
+  }
+  const breakdown = [...mains.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([main, n]) => `${main} ${n}`)
+    .join(" · ");
+
+  const totals: CellValue[] = [
+    confirmed.length ? `${confirmed.length} confirmed` : "Awaiting replies",
+    "",
+    breakdown,
+    withFlags ? `${withFlags} dietary` : "",
+    kids ? `${kids} kids` : "",
+    "",
+  ];
+
+  await sheetsApi.spreadsheets.values.update({
+    spreadsheetId: wedding.sheetId,
+    range: range(TAB.caterer, "A2:F2"),
+    valueInputOption: "RAW",
+    requestBody: { values: [totals] },
+  });
 }
 
 /**
@@ -183,10 +250,10 @@ export async function pushSongsToSheet(wedding: WeddingRow): Promise<void> {
   }
 
   const tallies = [...byKey.values()].sort((a, b) => b.votes - a.votes);
-  const values = tallies.map((t) => [
+  const values: CellValue[][] = tallies.map((t) => [
     t.title,
     t.artist,
-    String(t.votes),
+    t.votes,
     "",
     t.by.slice(0, 3).join(", ") + (t.by.length > 3 ? ` +${t.by.length - 3}` : ""),
   ]);

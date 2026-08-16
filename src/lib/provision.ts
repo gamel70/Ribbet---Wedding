@@ -51,6 +51,19 @@ type TabSpec = {
   editable: number[] | "all";
   /** Cell note dropped on A1. */
   a1Note?: string;
+  /** Columns rendered as real checkboxes (BOOLEAN validation), not TRUE/FALSE text. */
+  checkboxes?: number[];
+  /** Columns that wrap long text instead of spilling into the neighbour. */
+  wrap?: number[];
+  /** Short columns that read better centered. */
+  center?: number[];
+  /** Columns shown as whole dollars. */
+  currency?: number[];
+  /**
+   * Seeds a pinned summary band on row 2 — the Caterer's totals row from the
+   * design. The sync job rewrites it as replies land; data rows start at 3.
+   */
+  totalsSeed?: string[];
 };
 
 const COLUMN_WIDTH_UNIT = 130;
@@ -67,6 +80,8 @@ function tabSpecsFor(sections: ReturnType<typeof resolveSections>): TabSpec[] {
       headers: ["Household", "Guests", "Invite sent", "Opened", "Reply", "Attending", "Kids", "Note to couple"],
       ratios: [1.6, 1.2, 0.9, 0.8, 0.9, 1, 0.8, 1.4],
       editable: [],
+      wrap: [1, 7],
+      center: [5, 6],
     },
     {
       title: "Caterer",
@@ -74,6 +89,10 @@ function tabSpecsFor(sections: ReturnType<typeof resolveSections>): TabSpec[] {
       headers: ["Guest", "Table", "Main", "Dietary", "Kid", "Kitchen note"],
       ratios: [1.5, 1.2, 1.1, 1.4, 0.7, 1.5],
       editable: [],
+      checkboxes: [4],
+      wrap: [3, 5],
+      center: [1],
+      totalsSeed: ["Awaiting replies", "", "", "", "", ""],
     },
   ];
 
@@ -84,6 +103,7 @@ function tabSpecsFor(sections: ReturnType<typeof resolveSections>): TabSpec[] {
       headers: ["Song", "Artist", "Votes", "Slot", "Requested by"],
       ratios: [1.5, 1.4, 0.7, 1.1, 1.4],
       editable: [],
+      center: [2],
     });
   }
 
@@ -96,6 +116,9 @@ function tabSpecsFor(sections: ReturnType<typeof resolveSections>): TabSpec[] {
       // Paid, Card sent and Sent on are the two-way columns — ticking in the
       // Sheet has to work, so they stay unprotected.
       editable: [3, 5, 6],
+      checkboxes: [3, 5],
+      wrap: [4],
+      currency: [2],
     });
   }
 
@@ -107,6 +130,7 @@ function tabSpecsFor(sections: ReturnType<typeof resolveSections>): TabSpec[] {
       ratios: [1.5, 1, 1.1, 0.9, 2],
       editable: "all",
       a1Note: "Type a place in the next row and it appears in your guests' app.",
+      wrap: [4],
     });
   }
 
@@ -224,6 +248,10 @@ export async function provisionWedding(weddingId: string): Promise<ProvisionResu
         const tabId = idByTitle.get(spec.title);
         if (tabId == null) continue;
 
+        // Rows 1..dataStart are pinned chrome; data begins underneath. Only the
+        // Caterer carries a second pinned row (its totals band).
+        const dataStart = spec.totalsSeed ? 2 : 1;
+
         // Header row. The A1 note rides along on the first cell where one exists.
         requests.push({
           updateCells: {
@@ -265,12 +293,111 @@ export async function provisionWedding(weddingId: string): Promise<ProvisionResu
           },
         });
 
+        // The totals band — "a totals row pinned at the top" of the Caterer tab.
+        // Seeded here; the sync job rewrites it as replies land.
+        if (spec.totalsSeed) {
+          requests.push({
+            updateCells: {
+              range: {
+                sheetId: tabId,
+                startRowIndex: 1,
+                endRowIndex: 2,
+                startColumnIndex: 0,
+                endColumnIndex: spec.headers.length,
+              },
+              fields: "userEnteredValue",
+              rows: [
+                {
+                  values: spec.totalsSeed.map((v) => ({ userEnteredValue: { stringValue: v } })),
+                },
+              ],
+            },
+          });
+          requests.push({
+            repeatCell: {
+              range: { sheetId: tabId, startRowIndex: 1, endRowIndex: 2 },
+              cell: {
+                userEnteredFormat: {
+                  backgroundColor: hexToRgb("#faf6ee"),
+                  textFormat: { bold: true, fontSize: 10 },
+                  verticalAlignment: "MIDDLE",
+                },
+              },
+              fields: "userEnteredFormat(backgroundColor,textFormat,verticalAlignment)",
+            },
+          });
+        }
+
+        // Freeze the pinned rows and cut the grid off at the last real column —
+        // a tab that ends where its data ends reads cleaner than 20 gray spares.
         requests.push({
           updateSheetProperties: {
-            properties: { sheetId: tabId, gridProperties: { frozenRowCount: 1 } },
-            fields: "gridProperties.frozenRowCount",
+            properties: {
+              sheetId: tabId,
+              gridProperties: { frozenRowCount: dataStart, columnCount: spec.headers.length },
+            },
+            fields: "gridProperties(frozenRowCount,columnCount)",
           },
         });
+
+        // Soft banding under the pinned rows, so a vendor can scan a long list.
+        requests.push({
+          addBanding: {
+            bandedRange: {
+              range: {
+                sheetId: tabId,
+                startRowIndex: dataStart,
+                startColumnIndex: 0,
+                endColumnIndex: spec.headers.length,
+              },
+              rowProperties: {
+                firstBandColor: hexToRgb("#ffffff"),
+                secondBandColor: hexToRgb("#f7f8f9"),
+              },
+            },
+          },
+        });
+
+        // Real checkboxes, not TRUE/FALSE text — Paid, Card sent, Kid.
+        for (const col of spec.checkboxes ?? []) {
+          requests.push({
+            setDataValidation: {
+              range: { sheetId: tabId, startRowIndex: dataStart, startColumnIndex: col, endColumnIndex: col + 1 },
+              rule: { condition: { type: "BOOLEAN" }, showCustomUi: true },
+            },
+          });
+        }
+
+        // Whole dollars on Amount; nobody thanks you for cents.
+        for (const col of spec.currency ?? []) {
+          requests.push({
+            repeatCell: {
+              range: { sheetId: tabId, startRowIndex: dataStart, startColumnIndex: col, endColumnIndex: col + 1 },
+              cell: { userEnteredFormat: { numberFormat: { type: "CURRENCY", pattern: "$#,##0" } } },
+              fields: "userEnteredFormat.numberFormat",
+            },
+          });
+        }
+
+        // Long text wraps in place; short counts sit centered under their header.
+        for (const col of spec.wrap ?? []) {
+          requests.push({
+            repeatCell: {
+              range: { sheetId: tabId, startRowIndex: dataStart, startColumnIndex: col, endColumnIndex: col + 1 },
+              cell: { userEnteredFormat: { wrapStrategy: "WRAP", verticalAlignment: "TOP" } },
+              fields: "userEnteredFormat(wrapStrategy,verticalAlignment)",
+            },
+          });
+        }
+        for (const col of spec.center ?? []) {
+          requests.push({
+            repeatCell: {
+              range: { sheetId: tabId, startRowIndex: dataStart, startColumnIndex: col, endColumnIndex: col + 1 },
+              cell: { userEnteredFormat: { horizontalAlignment: "CENTER" } },
+              fields: "userEnteredFormat.horizontalAlignment",
+            },
+          });
+        }
 
         // Column widths matching the design's grid ratios.
         spec.ratios.forEach((ratio, i) => {

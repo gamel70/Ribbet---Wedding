@@ -93,8 +93,12 @@ Only create tabs for sections the couple switched on — DJ list only if `sectio
 **3. One `spreadsheets.batchUpdate`** carrying every formatting request together:
 - `updateCells` — header row per tab (exact column names are in the "The Google Sheet" section below)
 - `repeatCell` — header style: bold, 11px, uppercase, `#f1f3f4` background, `#5f6368` text
-- `updateSheetProperties` — freeze row 1 (and column A where the design shows a sticky row-number column)
+- `updateCells` + `repeatCell` — the Caterer's totals band pinned on row 2 (`#faf6ee`, bold): confirmed count, mains breakdown, dietary flags, kids. Seeded "Awaiting replies" here, rewritten by the sync job as replies land; Caterer data rows start at 3.
+- `updateSheetProperties` — freeze the pinned rows (two on Caterer, one elsewhere) and trim `columnCount` to the last real column, so the tab ends where the data ends
 - `updateDimensionProperties` — column widths matching the design's grid ratios
+- `addBanding` — soft `#ffffff`/`#f7f8f9` row banding under the pinned rows
+- `setDataValidation` — real checkboxes (BOOLEAN) on Caterer `Kid`, gift `Paid` and `Card sent`; the sync writes true booleans into them
+- `repeatCell` — `$#,##0` currency on gift `Amount`; wrap on note-ish columns; centered counts
 - `addProtectedRange` — **on every Ribbet-written column**, `warningOnly: false`, editors limited to the couple. Leave unprotected: thank-you `Sent`, gift `Paid`, and the whole Things to do tab.
 - `updateCells` on Things to do A1 — a note reading "Type a place in the next row and it appears in your guests' app."
 
