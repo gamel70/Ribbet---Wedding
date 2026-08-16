@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore, useTransition } from "react";
+import Link from "next/link";
 import { signIn, signOut } from "next-auth/react";
 
 import type { Layout, Palette, SectionKey, Sections } from "@/db/schema";
@@ -325,16 +326,19 @@ export function IntakeWizard({ initial }: { initial: WizardInitial }) {
           paddingBottom: 14,
         }}
       >
-        <span
+        <Link
+          href="/"
           style={{
             fontFamily: "var(--font-fraunces), serif",
             fontWeight: 600,
             fontSize: 26,
             letterSpacing: "-.02em",
+            color: "inherit",
+            textDecoration: "none",
           }}
         >
           Ribbet
-        </span>
+        </Link>
         <span style={{ fontSize: 12, letterSpacing: ".14em", textTransform: "uppercase", opacity: 0.6 }}>
           Set up your wedding
         </span>
