@@ -50,15 +50,15 @@ export function CoupleSignIn() {
             opacity: 0.55,
           }}
         >
-          Couple console
+          Couple &amp; planner console
         </div>
 
         <h1 style={{ marginTop: 22, fontFamily: "var(--font-fraunces), serif", fontSize: 30, lineHeight: 1.15 }}>
           Sign in to your wedding.
         </h1>
         <p style={{ marginTop: 12, fontSize: 13.5, lineHeight: 1.65, opacity: 0.72 }}>
-          Use the same Google account you set the wedding up with. This is the private side — your guests never see
-          it.
+          Use the Google account the wedding was set up with — whether you&apos;re the couple or the planner
+          running it for them. This is the private side; guests never see it.
         </p>
 
         <button

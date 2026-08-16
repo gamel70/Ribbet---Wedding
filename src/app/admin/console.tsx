@@ -167,7 +167,7 @@ export function Console({
             Ribbet
           </span>
           <span style={{ fontSize: 11, letterSpacing: ".16em", textTransform: "uppercase", opacity: 0.6 }}>
-            Couple console
+            Couple &amp; planner console
           </span>
           <span style={{ marginLeft: "auto", fontSize: 12, opacity: 0.6 }}>
             {email}

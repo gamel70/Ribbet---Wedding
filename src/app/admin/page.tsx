@@ -21,7 +21,7 @@ import { CoupleSignIn } from "./sign-in";
  * guest-facing sign-in anywhere else: a guest who never looks at the footer has
  * no idea this exists.
  */
-export const metadata = { title: "Ribbet · Couple console" };
+export const metadata = { title: "Ribbet · Couple & planner console" };
 
 export default async function AdminPage() {
   const session = await getServerSession(authOptions);
